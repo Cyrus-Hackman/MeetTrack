@@ -2,6 +2,10 @@ package com.meettrack.app.ui.screens.settings
 
 import android.content.Context
 import android.content.Intent
+import android.app.AlarmManager
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -19,6 +23,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -33,9 +40,23 @@ fun SettingsScreen(
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var canScheduleExactAlarms by remember {
+        mutableStateOf(hasExactAlarmPermission(context))
+    }
 
     var showRestoreDialog by remember { mutableStateOf(false) }
     var restoreInputText by remember { mutableStateOf("") }
+
+    DisposableEffect(lifecycleOwner, context) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                canScheduleExactAlarms = hasExactAlarmPermission(context)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     Scaffold(
         modifier = Modifier.padding(paddingValues),
@@ -81,6 +102,32 @@ fun SettingsScreen(
                     checked = settings.notificationsEnabled,
                     onCheckedChange = viewModel::updateNotificationsEnabled
                 )
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                    !canScheduleExactAlarms
+                ) {
+                    Column(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            "Allow exact alarms to receive meeting reminders on time.",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Button(
+                            onClick = {
+                                context.startActivity(
+                                    Intent(
+                                        Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                                        Uri.parse("package:${context.packageName}")
+                                    )
+                                )
+                            }
+                        ) {
+                            Text("Enable exact alarms")
+                        }
+                    }
+                }
 
                 Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                     Text(
@@ -234,6 +281,12 @@ fun SettingsScreen(
             }
         )
     }
+}
+
+private fun hasExactAlarmPermission(context: Context): Boolean {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return true
+    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    return alarmManager.canScheduleExactAlarms()
 }
 
 private fun shareContent(context: Context, content: String, subject: String, mimeType: String) {

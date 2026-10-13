@@ -77,6 +77,12 @@ class NotificationScheduler @Inject constructor(
         if (!settingsRepository.settings.first().notificationsEnabled ||
             meeting.status.name == "CANCELLED"
         ) return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            !alarmManager.canScheduleExactAlarms()
+        ) {
+            Log.w(TAG, "Exact alarm permission is not granted; reminders were not scheduled")
+            return
+        }
 
         val intervals = parseIntervals(meeting.reminderIntervals)
         val meetingEpoch = meeting.dateTime
@@ -133,25 +139,12 @@ class NotificationScheduler @Inject constructor(
         )
 
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                if (alarmManager.canScheduleExactAlarms()) {
-                    alarmManager.setExactAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent
-                    )
-                } else {
-                    alarmManager.setAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent
-                    )
-                }
-            } else {
-                alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent
-                )
-            }
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent
+            )
             Log.d(TAG, "Scheduled alarm for meeting $meetingId, $minutesBefore min before")
         } catch (e: SecurityException) {
-            Log.e(TAG, "Cannot schedule exact alarm: ${e.message}")
-            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+            Log.e(TAG, "Cannot schedule exact alarm", e)
         }
     }
 
