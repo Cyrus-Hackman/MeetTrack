@@ -1,6 +1,7 @@
 package com.meettrack.app.di
 
 import android.content.Context
+import com.meettrack.app.data.preferences.SettingsRepository
 import com.meettrack.app.notifications.NotificationScheduler
 import dagger.Module
 import dagger.Provides
@@ -19,6 +20,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideNotificationScheduler(@ApplicationContext context: Context): NotificationScheduler =
-        NotificationScheduler(context)
+    fun provideNotificationScheduler(
+        @ApplicationContext context: Context,
+        settingsRepository: SettingsRepository
+    ): NotificationScheduler = NotificationScheduler(context, settingsRepository)
 }

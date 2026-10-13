@@ -4,18 +4,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.meettrack.app.data.model.Client
 import com.meettrack.app.data.model.Meeting
 import com.meettrack.app.data.model.MeetingStatus
 import com.meettrack.app.data.model.MeetingWithClient
+import com.meettrack.app.data.preferences.SettingsRepository
 import com.meettrack.app.data.repository.ClientRepository
 import com.meettrack.app.data.repository.MeetingRepository
-import com.meettrack.app.data.model.Client
 import com.meettrack.app.notifications.NotificationScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -41,7 +43,8 @@ data class MeetingFormState(
 class MeetingViewModel @Inject constructor(
     private val meetingRepository: MeetingRepository,
     private val clientRepository: ClientRepository,
-    private val notificationScheduler: NotificationScheduler
+    private val notificationScheduler: NotificationScheduler,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     private val gson = Gson()
@@ -54,6 +57,17 @@ class MeetingViewModel @Inject constructor(
 
     val allClients: StateFlow<List<Client>> = clientRepository.getAllClients()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    init {
+        viewModelScope.launch {
+            val defaultReminderMinutes = settingsRepository.settings.first().defaultReminderMinutes
+            if (_formState.value == MeetingFormState()) {
+                _formState.value = _formState.value.copy(
+                    reminderIntervals = defaultReminderMinutes
+                )
+            }
+        }
+    }
 
     fun loadMeeting(meetingId: Long) {
         viewModelScope.launch {

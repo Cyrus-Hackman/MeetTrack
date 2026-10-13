@@ -157,7 +157,7 @@ class BackupManager @Inject constructor(
                         it.meeting.status in setOf(MeetingStatus.UPCOMING, MeetingStatus.RESCHEDULED) &&
                             it.meeting.dateTime.isAfter(now)
                     }
-                    .forEach(notificationScheduler::scheduleReminders)
+                    .forEach { notificationScheduler.scheduleReminders(it) }
             }
 
             Result.success(ImportSummary(payload.clients.size, payload.meetings.size))

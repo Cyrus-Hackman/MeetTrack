@@ -17,8 +17,10 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.meettrack.app.MainActivity
 import com.meettrack.app.R
+import com.meettrack.app.data.preferences.SettingsRepository
 import com.meettrack.app.data.model.Meeting
 import com.meettrack.app.data.model.MeetingWithClient
+import kotlinx.coroutines.flow.first
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -27,7 +29,8 @@ import javax.inject.Singleton
 
 @Singleton
 class NotificationScheduler @Inject constructor(
-    private val context: Context
+    private val context: Context,
+    private val settingsRepository: SettingsRepository
 ) {
     companion object {
         const val CHANNEL_ID = "meettrack_reminders"
@@ -64,14 +67,16 @@ class NotificationScheduler @Inject constructor(
         notificationManager.createNotificationChannel(channel)
     }
 
-    fun scheduleReminders(meetingWithClient: MeetingWithClient) {
+    suspend fun scheduleReminders(meetingWithClient: MeetingWithClient) {
         val meeting = meetingWithClient.meeting
         val client = meetingWithClient.client
 
         // Cancel existing reminders first
         cancelReminders(meeting.id)
 
-        if (meeting.status.name == "CANCELLED") return
+        if (!settingsRepository.settings.first().notificationsEnabled ||
+            meeting.status.name == "CANCELLED"
+        ) return
 
         val intervals = parseIntervals(meeting.reminderIntervals)
         val meetingEpoch = meeting.dateTime

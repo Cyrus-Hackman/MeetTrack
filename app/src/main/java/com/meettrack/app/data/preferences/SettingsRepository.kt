@@ -5,7 +5,6 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -20,8 +19,7 @@ data class AppSettings(
     val defaultReminderMinutes: List<Int> = listOf(60, 30),
     val useDarkTheme: Boolean = false,
     val useSystemTheme: Boolean = true,
-    val notificationsEnabled: Boolean = true,
-    val defaultMeetingDurationMinutes: Int = 60
+    val notificationsEnabled: Boolean = true
 )
 
 @Singleton
@@ -33,7 +31,6 @@ class SettingsRepository @Inject constructor(
         private val KEY_USE_DARK_THEME = booleanPreferencesKey("use_dark_theme")
         private val KEY_USE_SYSTEM_THEME = booleanPreferencesKey("use_system_theme")
         private val KEY_NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
-        private val KEY_DEFAULT_MEETING_DURATION = intPreferencesKey("default_meeting_duration")
     }
 
     val settings: Flow<AppSettings> = context.dataStore.data.map { prefs ->
@@ -44,8 +41,7 @@ class SettingsRepository @Inject constructor(
                 ?: listOf(60, 30),
             useDarkTheme = prefs[KEY_USE_DARK_THEME] ?: false,
             useSystemTheme = prefs[KEY_USE_SYSTEM_THEME] ?: true,
-            notificationsEnabled = prefs[KEY_NOTIFICATIONS_ENABLED] ?: true,
-            defaultMeetingDurationMinutes = prefs[KEY_DEFAULT_MEETING_DURATION] ?: 60
+            notificationsEnabled = prefs[KEY_NOTIFICATIONS_ENABLED] ?: true
         )
     }
 
@@ -71,12 +67,6 @@ class SettingsRepository @Inject constructor(
     suspend fun updateNotificationsEnabled(enabled: Boolean) {
         context.dataStore.edit { prefs ->
             prefs[KEY_NOTIFICATIONS_ENABLED] = enabled
-        }
-    }
-
-    suspend fun updateDefaultMeetingDuration(minutes: Int) {
-        context.dataStore.edit { prefs ->
-            prefs[KEY_DEFAULT_MEETING_DURATION] = minutes
         }
     }
 }
