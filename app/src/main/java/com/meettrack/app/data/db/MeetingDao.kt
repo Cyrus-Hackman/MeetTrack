@@ -2,8 +2,6 @@ package com.meettrack.app.data.db
 
 import androidx.room.Dao
 import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
@@ -75,6 +73,10 @@ interface MeetingDao {
     @Transaction
     @Query("SELECT * FROM meetings WHERE id = :id")
     fun getMeetingWithClientById(id: Long): Flow<MeetingWithClient?>
+
+    @Transaction
+    @Query("SELECT * FROM meetings WHERE id IN (:ids)")
+    suspend fun getMeetingsWithClientsByIds(ids: List<Long>): List<MeetingWithClient>
 
     @Query("SELECT COUNT(*) FROM meetings WHERE status = 'UPCOMING'")
     fun getUpcomingMeetingCount(): Flow<Int>
