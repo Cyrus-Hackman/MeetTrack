@@ -2,10 +2,9 @@ package com.meettrack.app.data.db
 
 import androidx.room.Dao
 import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Upsert
 import androidx.room.Update
 import com.meettrack.app.data.model.Client
 import com.meettrack.app.data.model.ClientWithMeetings
@@ -43,7 +42,7 @@ interface ClientDao {
     @Query("SELECT * FROM clients WHERE id = :clientId")
     fun getClientWithMeetings(clientId: Long): Flow<ClientWithMeetings?>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun insertClient(client: Client): Long
 
     @Update
@@ -58,6 +57,6 @@ interface ClientDao {
     @Query("SELECT * FROM clients ORDER BY fullName ASC")
     suspend fun getAllClientsDirect(): List<Client>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun insertClients(clients: List<Client>): List<Long>
 }

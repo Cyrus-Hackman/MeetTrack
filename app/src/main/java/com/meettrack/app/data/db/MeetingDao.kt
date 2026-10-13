@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Upsert
 import androidx.room.Update
 import com.meettrack.app.data.model.Meeting
 import com.meettrack.app.data.model.MeetingStatus
@@ -87,7 +88,7 @@ interface MeetingDao {
     """)
     suspend fun getAllUpcomingMeetingsDirect(): List<MeetingWithClient>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun insertMeeting(meeting: Meeting): Long
 
     @Update
@@ -105,6 +106,6 @@ interface MeetingDao {
     @Query("SELECT * FROM meetings ORDER BY dateTime ASC")
     suspend fun getAllMeetingsDirect(): List<Meeting>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun insertMeetings(meetings: List<Meeting>): List<Long>
 }
