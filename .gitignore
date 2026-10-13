@@ -1,0 +1,44 @@
+# Built application packages
+*.apk
+*.ap_
+*.aab
+*.dex
+
+# Gradle cache and runtime files
+.gradle/
+build/
+**/build/
+
+# Local SDK configuration (machine-specific)
+local.properties
+
+# Android Studio and IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+.navigation/
+
+# Android Studio profiler and inspection captures
+captures/
+*.hprof
+
+# NDK and C++ build cache
+.externalNativeBuild/
+.cxx/
+
+# Keystores and signing credentials
+*.jks
+*.keystore
+
+# Google Services credentials
+# google-services.json
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Log files
+*.log
