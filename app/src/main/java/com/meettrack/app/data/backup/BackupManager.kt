@@ -6,7 +6,9 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
+import com.google.gson.JsonNull
 import com.google.gson.JsonParseException
+import com.google.gson.JsonParser
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializer
 import com.google.gson.JsonSerializationContext
@@ -46,7 +48,8 @@ class BackupManager @Inject constructor(
     private val gson: Gson = GsonBuilder()
         .registerTypeAdapter(LocalDateTime::class.java, object : JsonSerializer<LocalDateTime>, JsonDeserializer<LocalDateTime> {
             override fun serialize(src: LocalDateTime?, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
-                return JsonPrimitive(src?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) ?: "")
+                return src?.let { JsonPrimitive(it.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)) }
+                    ?: JsonNull.INSTANCE
             }
 
             override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): LocalDateTime {
@@ -124,6 +127,7 @@ class BackupManager @Inject constructor(
 
     suspend fun importFromJson(jsonString: String): Result<ImportSummary> {
         return try {
+            validateRequiredDateFields(JsonParser.parseString(jsonString))
             val payload = gson.fromJson(jsonString, BackupPayload::class.java)
                 ?: return Result.failure(IllegalArgumentException("Invalid backup JSON format"))
 
@@ -163,6 +167,39 @@ class BackupManager @Inject constructor(
             Result.success(ImportSummary(payload.clients.size, payload.meetings.size))
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    private fun validateRequiredDateFields(root: JsonElement) {
+        if (!root.isJsonObject) return
+
+        val payload = root.asJsonObject
+        validateRequiredDateFields(payload.get("clients"), "clients", listOf("dateAdded"))
+        validateRequiredDateFields(
+            payload.get("meetings"),
+            "meetings",
+            listOf("dateTime", "createdAt", "updatedAt")
+        )
+    }
+
+    private fun validateRequiredDateFields(
+        entities: JsonElement?,
+        collectionName: String,
+        fields: List<String>
+    ) {
+        if (entities?.isJsonArray != true) return
+
+        entities.asJsonArray.forEachIndexed { index, entity ->
+            if (!entity.isJsonObject) return@forEachIndexed
+
+            fields.forEach { field ->
+                val value = entity.asJsonObject.get(field)
+                if (value == null || value.isJsonNull) {
+                    throw JsonParseException(
+                        "Missing required LocalDateTime field: $collectionName[$index].$field"
+                    )
+                }
+            }
         }
     }
 
