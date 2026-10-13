@@ -146,11 +146,13 @@ cd MeetTrack
 ```
 
 ### Google Maps Configuration
-To enable in-app maps, add your Google Maps API key in `app/build.gradle.kts`:
+To enable in-app maps, add your Google Maps API key to the ignored `local.properties` file at the project root:
 
-```kotlin
-manifestPlaceholders["MAPS_API_KEY"] = "YOUR_GOOGLE_MAPS_API_KEY"
+```properties
+MAPS_API_KEY=your_google_maps_api_key
 ```
+
+The project builds without a key, but map tiles will not load until one is configured.
 
 ---
 
