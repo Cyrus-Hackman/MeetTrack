@@ -2,13 +2,10 @@
 # You can control the set of applied configuration files using the
 # proguardFiles setting in build.gradle.
 
-# Keep Room entities
--keep class com.meettrack.app.data.model.** { *; }
+# Room entities are also serialized by Gson in backups.
+-keep class com.meettrack.app.data.model.Client { *; }
+-keep class com.meettrack.app.data.model.Meeting { *; }
+-keep enum com.meettrack.app.data.model.MeetingStatus { *; }
+-keep class com.meettrack.app.data.backup.BackupPayload { *; }
 
-# Keep Hilt classes
--keep class dagger.hilt.** { *; }
-
-# Keep Gson classes
--keep class com.google.gson.** { *; }
--keepattributes Signature
--keepattributes *Annotation*
+-keepattributes Signature, *Annotation*
