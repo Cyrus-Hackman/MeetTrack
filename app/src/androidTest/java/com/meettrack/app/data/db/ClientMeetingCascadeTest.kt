@@ -5,6 +5,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.meettrack.app.data.model.Client
 import com.meettrack.app.data.model.Meeting
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -14,7 +15,7 @@ import java.time.LocalDateTime
 class ClientMeetingCascadeTest {
 
     @Test
-    fun upsertingClientPreservesItsMeetings() {
+    fun upsertingClientPreservesItsMeetings() = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val database = Room.inMemoryDatabaseBuilder(
             context,
