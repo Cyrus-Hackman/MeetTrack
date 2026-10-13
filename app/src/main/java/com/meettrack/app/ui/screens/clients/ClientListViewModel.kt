@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
@@ -31,11 +32,12 @@ class ClientListViewModel @Inject constructor(
     private val _filter = MutableStateFlow(ClientFilter.ALL)
     val filter: StateFlow<ClientFilter> = _filter.asStateFlow()
 
-    val clients: StateFlow<List<Client>> = _searchQuery
-        .debounce(300)
-        .flatMapLatest { query ->
+    val clients: StateFlow<List<Client>> = combine(_searchQuery.debounce(300), _filter) { query, filter ->
+        query to filter
+    }
+        .flatMapLatest { (query, filter) ->
             if (query.isBlank()) {
-                when (_filter.value) {
+                when (filter) {
                     ClientFilter.WITH_LOCATION -> clientRepository.getClientsWithLocation()
                     ClientFilter.RECENT -> clientRepository.getRecentClients(20)
                     else -> clientRepository.getAllClients()
