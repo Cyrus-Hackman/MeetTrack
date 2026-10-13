@@ -90,16 +90,16 @@ class BackupManager @Inject constructor(
         sb.append("ID,Full Name,Phone Number,Email,Company,Address,Notes,Latitude,Longitude,Date Added\n")
         clients.forEach { c ->
             sb.append(listOf(
-                c.id.toString(),
+                escapeCsv(c.id.toString()),
                 escapeCsv(c.fullName),
                 escapeCsv(c.phoneNumber),
                 escapeCsv(c.email),
                 escapeCsv(c.company),
                 escapeCsv(c.address.ifBlank { c.formattedAddress }),
                 escapeCsv(c.notes),
-                c.latitude?.toString() ?: "",
-                c.longitude?.toString() ?: "",
-                c.dateAdded.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                escapeCsv(c.latitude?.toString() ?: ""),
+                escapeCsv(c.longitude?.toString() ?: ""),
+                escapeCsv(c.dateAdded.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
             ).joinToString(",")).append("\n")
         }
         return sb.toString()
@@ -113,13 +113,13 @@ class BackupManager @Inject constructor(
         meetings.forEach { m ->
             val clientName = clients[m.clientId]?.fullName ?: "Unknown Client"
             sb.append(listOf(
-                m.id.toString(),
+                escapeCsv(m.id.toString()),
                 escapeCsv(m.title),
                 escapeCsv(clientName),
-                m.dateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+                escapeCsv(m.dateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)),
                 escapeCsv(m.location),
                 escapeCsv(m.notes),
-                m.status.name
+                escapeCsv(m.status.name)
             ).joinToString(",")).append("\n")
         }
         return sb.toString()
@@ -204,10 +204,16 @@ class BackupManager @Inject constructor(
     }
 
     private fun escapeCsv(value: String): String {
-        return if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
-            "\"" + value.replace("\"", "\"\"") + "\""
+        val safeValue = when (value.firstOrNull()) {
+            '=', '+', '-', '@', '\t', '\r' -> "'$value"
+            else -> value
+        }
+        return if (safeValue.contains(",") || safeValue.contains("\"") ||
+            safeValue.contains("\n") || safeValue.contains("\r")
+        ) {
+            "\"" + safeValue.replace("\"", "\"\"") + "\""
         } else {
-            value
+            safeValue
         }
     }
 }
