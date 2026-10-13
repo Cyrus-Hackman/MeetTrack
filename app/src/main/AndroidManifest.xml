@@ -24,9 +24,6 @@
     <!-- Vibration for notifications -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
-    <!-- Phone calls (optional – open dialer) -->
-    <uses-permission android:name="android.permission.CALL_PHONE" />
-
     <application
         android:name=".MeetTrackApplication"
         android:allowBackup="false"
