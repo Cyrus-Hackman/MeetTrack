@@ -22,6 +22,9 @@ interface MeetingDao {
     @Query("SELECT * FROM meetings WHERE clientId = :clientId ORDER BY dateTime DESC")
     fun getMeetingsForClient(clientId: Long): Flow<List<MeetingWithClient>>
 
+    @Query("SELECT id FROM meetings WHERE clientId = :clientId")
+    suspend fun getMeetingIdsForClient(clientId: Long): List<Long>
+
     @Transaction
     @Query("""
         SELECT * FROM meetings 

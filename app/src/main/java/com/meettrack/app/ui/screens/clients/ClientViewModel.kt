@@ -188,7 +188,7 @@ class ClientViewModel @Inject constructor(
 
     fun deleteClient(clientId: Long, onSuccess: () -> Unit) {
         viewModelScope.launch {
-            clientRepository.deleteClientById(clientId)
+            clientRepository.deleteClientAndCancelReminders(clientId)
             onSuccess()
         }
     }

@@ -57,7 +57,7 @@ class ClientListViewModel @Inject constructor(
 
     fun deleteClient(client: Client) {
         viewModelScope.launch {
-            clientRepository.deleteClient(client)
+            clientRepository.deleteClientAndCancelReminders(client.id)
         }
     }
 }
