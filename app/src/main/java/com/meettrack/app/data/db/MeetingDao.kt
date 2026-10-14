@@ -89,13 +89,8 @@ interface MeetingDao {
     fun getUpcomingMeetingCount(): Flow<Int>
 
     @Transaction
-    @Query("""
-        SELECT * FROM meetings 
-        WHERE status IN ('UPCOMING', 'RESCHEDULED')
-        AND dateTime > strftime('%Y-%m-%dT%H:%M:%S', 'now', 'localtime')
-        ORDER BY dateTime ASC
-    """)
-    suspend fun getAllUpcomingMeetingsDirect(): List<MeetingWithClient>
+    @Query("SELECT * FROM meetings ORDER BY dateTime ASC")
+    suspend fun getAllMeetingsWithClientsDirect(): List<MeetingWithClient>
 
     @Upsert
     suspend fun insertMeeting(meeting: Meeting): Long

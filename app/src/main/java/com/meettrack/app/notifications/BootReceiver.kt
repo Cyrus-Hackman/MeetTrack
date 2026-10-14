@@ -31,11 +31,8 @@ class BootReceiver : BroadcastReceiver() {
             val pendingResult = goAsync()
             applicationScope.launch {
                 try {
-                    // Re-schedule all upcoming meetings
-                    val meetings = database.meetingDao().getAllUpcomingMeetingsDirect()
-                    meetings.forEach { meetingWithClient ->
-                        notificationScheduler.scheduleReminders(meetingWithClient)
-                    }
+                    val meetings = database.meetingDao().getAllMeetingsWithClientsDirect()
+                    notificationScheduler.rescheduleUpcoming(meetings)
                     Log.d("BootReceiver", "Re-scheduled ${meetings.size} meeting reminders")
                 } catch (e: Exception) {
                     Log.e("BootReceiver", "Failed to re-schedule reminders", e)

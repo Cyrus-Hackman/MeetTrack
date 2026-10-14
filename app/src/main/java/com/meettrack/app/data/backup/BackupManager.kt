@@ -1,17 +1,12 @@
 package com.meettrack.app.data.backup
 
 import androidx.room.withTransaction
-import com.google.gson.JsonElement
-import com.google.gson.JsonParseException
-import com.google.gson.JsonParser
 import com.meettrack.app.data.db.MeetTrackDatabase
 import com.meettrack.app.data.model.Client
 import com.meettrack.app.data.model.Meeting
-import com.meettrack.app.data.model.MeetingStatus
 import com.meettrack.app.data.repository.ClientRepository
 import com.meettrack.app.data.repository.MeetingRepository
-import com.meettrack.app.notifications.NotificationScheduler
-import java.lang.reflect.Type
+import com.meettrack.app.notifications.ReminderRescheduler
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
@@ -34,7 +29,7 @@ class BackupManager @Inject constructor(
     private val database: MeetTrackDatabase,
     private val clientRepository: ClientRepository,
     private val meetingRepository: MeetingRepository,
-    private val notificationScheduler: NotificationScheduler
+    private val reminderRescheduler: ReminderRescheduler
 ) {
     suspend fun exportToJson(): String {
         val clients = clientRepository.getAllClientsDirect()
@@ -109,51 +104,14 @@ class BackupManager @Inject constructor(
             }
 
             if (meetingIds.isNotEmpty()) {
-                val now = LocalDateTime.now()
-                meetingRepository.getMeetingsWithClientsByIds(meetingIds)
-                    .filter {
-                        it.meeting.status in setOf(MeetingStatus.UPCOMING, MeetingStatus.RESCHEDULED) &&
-                            it.meeting.dateTime.isAfter(now)
-                    }
-                    .forEach { notificationScheduler.scheduleReminders(it) }
+                reminderRescheduler.rescheduleUpcoming(
+                    meetingRepository.getMeetingsWithClientsByIds(meetingIds)
+                )
             }
 
             Result.success(ImportSummary(payload.clients.size, payload.meetings.size))
         } catch (e: Exception) {
             Result.failure(e)
-        }
-    }
-
-    private fun validateRequiredDateFields(root: JsonElement) {
-        if (!root.isJsonObject) return
-
-        val payload = root.asJsonObject
-        validateRequiredDateFields(payload.get("clients"), "clients", listOf("dateAdded"))
-        validateRequiredDateFields(
-            payload.get("meetings"),
-            "meetings",
-            listOf("dateTime", "createdAt", "updatedAt")
-        )
-    }
-
-    private fun validateRequiredDateFields(
-        entities: JsonElement?,
-        collectionName: String,
-        fields: List<String>
-    ) {
-        if (entities?.isJsonArray != true) return
-
-        entities.asJsonArray.forEachIndexed { index, entity ->
-            if (!entity.isJsonObject) return@forEachIndexed
-
-            fields.forEach { field ->
-                val value = entity.asJsonObject.get(field)
-                if (value == null || value.isJsonNull) {
-                    throw JsonParseException(
-                        "Missing required LocalDateTime field: $collectionName[$index].$field"
-                    )
-                }
-            }
         }
     }
 

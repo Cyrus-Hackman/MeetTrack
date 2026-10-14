@@ -18,8 +18,10 @@ import com.meettrack.app.R
 import com.meettrack.app.data.preferences.SettingsRepository
 import com.meettrack.app.data.model.parseReminderIntervals
 import com.meettrack.app.data.model.MeetingWithClient
+import com.meettrack.app.data.model.MeetingStatus
 import kotlinx.coroutines.flow.first
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Objects
 import javax.inject.Inject
@@ -30,7 +32,7 @@ class NotificationScheduler @Inject constructor(
     @ApplicationContext
     private val context: Context,
     private val settingsRepository: SettingsRepository
-) {
+) : ReminderRescheduler {
     companion object {
         const val CHANNEL_ID = "meettrack_reminders"
         const val CHANNEL_NAME = "Meeting Reminders"
@@ -61,7 +63,6 @@ class NotificationScheduler @Inject constructor(
 
     suspend fun scheduleReminders(meetingWithClient: MeetingWithClient) {
         val meeting = meetingWithClient.meeting
-        val client = meetingWithClient.client
 
         // Cancel existing reminders first
         cancelReminders(meeting.id)
@@ -82,10 +83,6 @@ class NotificationScheduler @Inject constructor(
             .toInstant()
             .toEpochMilli()
 
-        val effectiveLocation = meeting.location.ifBlank {
-            client.formattedAddress.ifBlank { client.address }
-        }
-
         intervals.forEach { minutesBefore ->
             val triggerTime = meetingEpoch - (minutesBefore * 60 * 1000L)
             if (triggerTime > System.currentTimeMillis()) {
@@ -96,6 +93,16 @@ class NotificationScheduler @Inject constructor(
                 )
             }
         }
+    }
+
+    override suspend fun rescheduleUpcoming(meetings: List<MeetingWithClient>) {
+        val now = LocalDateTime.now()
+        meetings.asSequence()
+            .filter {
+                it.meeting.status in setOf(MeetingStatus.UPCOMING, MeetingStatus.RESCHEDULED) &&
+                    it.meeting.dateTime.isAfter(now)
+            }
+            .forEach { scheduleReminders(it) }
     }
 
     private fun scheduleAlarm(

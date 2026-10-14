@@ -33,6 +33,8 @@ class MeetingRepository @Inject constructor(
         meetingDao.getMeetingWithClientByIdDirect(id)
     suspend fun getMeetingsWithClientsByIds(ids: List<Long>): List<MeetingWithClient> =
         meetingDao.getMeetingsWithClientsByIds(ids)
+    suspend fun getAllMeetingsWithClientsDirect(): List<MeetingWithClient> =
+        meetingDao.getAllMeetingsWithClientsDirect()
 
     fun getUpcomingMeetingCount(): Flow<Int> = meetingDao.getUpcomingMeetingCount()
 
