@@ -21,6 +21,7 @@ import com.meettrack.app.data.preferences.SettingsRepository
 import com.meettrack.app.data.model.MeetingWithClient
 import kotlinx.coroutines.flow.first
 import java.time.ZoneId
+import java.util.Objects
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -167,7 +168,7 @@ class NotificationScheduler @Inject constructor(
             putExtra(EXTRA_MEETING_ID, meetingId)
         }
         val tapPendingIntent = PendingIntent.getActivity(
-            context, meetingId.toInt(), tapIntent,
+            context, Objects.hash(meetingId, "tap"), tapIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -193,7 +194,7 @@ class NotificationScheduler @Inject constructor(
         // Action button 1: "View Details"
         val viewPendingIntent = PendingIntent.getActivity(
             context,
-            (meetingId * 1000 + 1).toInt(),
+            Objects.hash(meetingId, "view"),
             tapIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -210,7 +211,7 @@ class NotificationScheduler @Inject constructor(
             }
             val callPendingIntent = PendingIntent.getActivity(
                 context,
-                (meetingId * 1000 + 2).toInt(),
+                Objects.hash(meetingId, "call"),
                 callIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
@@ -228,7 +229,7 @@ class NotificationScheduler @Inject constructor(
             }
             val mapPendingIntent = PendingIntent.getActivity(
                 context,
-                (meetingId * 1000 + 3).toInt(),
+                Objects.hash(meetingId, "navigate"),
                 mapIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
@@ -239,7 +240,7 @@ class NotificationScheduler @Inject constructor(
             )
         }
 
-        val notifId = (meetingId * 1000 + minutesBefore).toInt()
+        val notifId = Objects.hash(meetingId, minutesBefore, "notification")
         notificationManager.notify(notifId, notificationBuilder.build())
     }
 
@@ -253,5 +254,5 @@ class NotificationScheduler @Inject constructor(
     }
 
     private fun getRequestCode(meetingId: Long, minutesBefore: Int): Int =
-        (meetingId * 10000 + minutesBefore).toInt()
+        Objects.hash(meetingId, minutesBefore)
 }
