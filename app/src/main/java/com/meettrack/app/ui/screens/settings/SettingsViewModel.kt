@@ -5,11 +5,14 @@ import androidx.lifecycle.viewModelScope
 import com.meettrack.app.data.backup.BackupManager
 import com.meettrack.app.data.preferences.AppSettings
 import com.meettrack.app.data.preferences.SettingsRepository
+import com.meettrack.app.data.repository.MeetingRepository
+import com.meettrack.app.notifications.ReminderRescheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -17,7 +20,9 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
-    private val backupManager: BackupManager
+    private val backupManager: BackupManager,
+    private val meetingRepository: MeetingRepository,
+    private val reminderRescheduler: ReminderRescheduler
 ) : ViewModel() {
 
     val settings: StateFlow<AppSettings> = settingsRepository.settings
@@ -35,7 +40,15 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun updateNotificationsEnabled(enabled: Boolean) {
-        viewModelScope.launch { settingsRepository.updateNotificationsEnabled(enabled) }
+        viewModelScope.launch {
+            val wasEnabled = settingsRepository.settings.first().notificationsEnabled
+            settingsRepository.updateNotificationsEnabled(enabled)
+            if (enabled && !wasEnabled) {
+                reminderRescheduler.rescheduleUpcoming(
+                    meetingRepository.getAllMeetingsWithClientsDirect()
+                )
+            }
+        }
     }
 
     fun updateDefaultReminders(intervals: List<Int>) {
