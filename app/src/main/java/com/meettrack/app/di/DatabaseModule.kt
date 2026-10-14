@@ -23,7 +23,7 @@ object DatabaseModule {
             context,
             MeetTrackDatabase::class.java,
             "meettrack_database"
-        ).fallbackToDestructiveMigration().build()
+        ).build()
 
     @Provides
     fun provideClientDao(db: MeetTrackDatabase): ClientDao = db.clientDao()

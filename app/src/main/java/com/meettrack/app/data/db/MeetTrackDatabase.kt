@@ -9,7 +9,7 @@ import com.meettrack.app.data.model.Meeting
 @Database(
     entities = [Client::class, Meeting::class],
     version = 1,
-    exportSchema = false
+    exportSchema = true
 )
 @TypeConverters(Converters::class, MeetingStatusConverter::class)
 abstract class MeetTrackDatabase : RoomDatabase() {
