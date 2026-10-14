@@ -86,7 +86,7 @@ class BackupManager @Inject constructor(
         return try {
             val payload = BackupPayloadJson.decode(jsonString)
 
-            val meetingIds = database.withTransaction {
+            database.withTransaction {
                 BackupPayloadJson.requireValidClientReferences(
                     clientRepository.getAllClientsDirect().map { it.id }.toSet(),
                     payload.clients,
@@ -98,14 +98,12 @@ class BackupManager @Inject constructor(
                 }
                 if (payload.meetings.isNotEmpty()) {
                     meetingRepository.insertMeetings(payload.meetings)
-                } else {
-                    emptyList()
                 }
             }
 
-            if (meetingIds.isNotEmpty()) {
+            if (payload.meetings.isNotEmpty()) {
                 reminderRescheduler.rescheduleUpcoming(
-                    meetingRepository.getMeetingsWithClientsByIds(meetingIds)
+                    meetingRepository.getMeetingsWithClientsByIds(payload.meetings.map { it.id })
                 )
             }
 
