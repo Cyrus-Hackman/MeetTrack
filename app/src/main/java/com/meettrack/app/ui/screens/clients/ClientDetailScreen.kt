@@ -14,10 +14,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.meettrack.app.R
 import com.meettrack.app.ui.components.*
 import java.time.format.DateTimeFormatter
 
@@ -67,7 +69,7 @@ fun ClientDetailScreen(
             ExtendedFloatingActionButton(
                 onClick = onNavigateToAddMeeting,
                 icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                text = { Text("Schedule Meeting") }
+                text = { Text(stringResource(R.string.schedule_meeting)) }
             )
         }
     ) { innerPadding ->
@@ -109,7 +111,7 @@ fun ClientDetailScreen(
                             Icon(Icons.Default.Phone, contentDescription = null,
                                 modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("Call")
+                            Text(stringResource(R.string.call))
                         }
                         if (client.email.isNotBlank()) {
                             OutlinedButton(
@@ -122,7 +124,7 @@ fun ClientDetailScreen(
                                 Icon(Icons.Default.Email, contentDescription = null,
                                     modifier = Modifier.size(16.dp))
                                 Spacer(Modifier.width(6.dp))
-                                Text("Email")
+                                Text(stringResource(R.string.email))
                             }
                         }
                     }
@@ -178,7 +180,7 @@ fun ClientDetailScreen(
                                 Icon(Icons.Default.Map, contentDescription = null,
                                     modifier = Modifier.size(16.dp))
                                 Spacer(Modifier.width(4.dp))
-                                Text("View Map")
+                                Text(stringResource(R.string.view_map))
                             }
                             OutlinedButton(
                                 onClick = {
@@ -190,7 +192,7 @@ fun ClientDetailScreen(
                                 Icon(Icons.Default.Navigation, contentDescription = null,
                                     modifier = Modifier.size(16.dp))
                                 Spacer(Modifier.width(4.dp))
-                                Text("Navigate")
+                                Text(stringResource(R.string.navigate))
                             }
                         }
                     } else if (client.address.isNotBlank()) {
@@ -258,7 +260,7 @@ fun ClientDetailScreen(
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
             icon = { Icon(Icons.Default.Warning, contentDescription = null) },
-            title = { Text("Delete Client") },
+            title = { Text(stringResource(R.string.delete_client)) },
             text = { Text("Delete ${client?.fullName}? All meeting records will also be removed.") },
             confirmButton = {
                 TextButton(
@@ -267,10 +269,10 @@ fun ClientDetailScreen(
                         showDeleteDialog = false
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
-                ) { Text("Delete") }
+                ) { Text(stringResource(R.string.delete)) }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }

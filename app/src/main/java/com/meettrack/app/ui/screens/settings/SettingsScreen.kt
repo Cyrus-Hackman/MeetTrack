@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -28,6 +29,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.meettrack.app.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -131,7 +133,7 @@ fun SettingsScreen(
     Scaffold(
         modifier = Modifier.padding(paddingValues),
         topBar = {
-            TopAppBar(title = { Text("Settings", fontWeight = FontWeight.Bold) })
+            TopAppBar(title = { Text(stringResource(R.string.settings), fontWeight = FontWeight.Bold) })
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
@@ -194,7 +196,7 @@ fun SettingsScreen(
                                 )
                             }
                         ) {
-                            Text("Enable exact alarms")
+                            Text(stringResource(R.string.enable_exact_alarms))
                         }
                     }
                 }
@@ -300,7 +302,7 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { restoreBackupJson = null },
             icon = { Icon(Icons.Default.Restore, contentDescription = null) },
-            title = { Text("Restore Backup") },
+            title = { Text(stringResource(R.string.restore_backup)) },
             text = {
                 Text(
                     "This will merge records from the backup: records with matching IDs will be overwritten, new records will be added, and local records not in the backup will remain. Continue?"
@@ -318,12 +320,12 @@ fun SettingsScreen(
                     },
                     enabled = !isProcessingBackup
                 ) {
-                    Text("Restore")
+                    Text(stringResource(R.string.restore))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { restoreBackupJson = null }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )

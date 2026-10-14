@@ -15,10 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.meettrack.app.R
 import com.meettrack.app.data.model.Client
 import com.meettrack.app.ui.components.*
 import com.meettrack.app.ui.theme.*
@@ -239,7 +241,7 @@ private fun DashboardHeader(
                 ) {
                     Icon(Icons.Default.PersonAdd, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp))
-                    Text("Add Client")
+                    Text(stringResource(R.string.add_client))
                 }
                 Button(
                     onClick = onAddMeeting,
@@ -251,7 +253,7 @@ private fun DashboardHeader(
                 ) {
                     Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp))
-                    Text("Schedule")
+                    Text(stringResource(R.string.schedule))
                 }
             }
         }

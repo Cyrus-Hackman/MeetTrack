@@ -12,11 +12,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.meettrack.app.R
 import com.meettrack.app.data.model.Client
 import com.meettrack.app.ui.components.ClientAvatar
 import com.meettrack.app.ui.components.EmptyState
@@ -40,7 +42,7 @@ fun ClientListScreen(
             Column {
                 TopAppBar(
                     title = {
-                        Text("Clients", fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.clients), fontWeight = FontWeight.Bold)
                     },
                     actions = {
                         IconButton(onClick = onNavigateToAddClient) {
@@ -55,7 +57,7 @@ fun ClientListScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp),
-                    placeholder = { Text("Search by name, phone, company…") },
+                    placeholder = { Text(stringResource(R.string.search_clients_hint)) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                     trailingIcon = {
                         if (searchQuery.isNotBlank()) {
@@ -76,7 +78,7 @@ fun ClientListScreen(
                         FilterChip(
                             selected = filter == ClientFilter.ALL,
                             onClick = { viewModel.onFilterChange(ClientFilter.ALL) },
-                            label = { Text("All") },
+                            label = { Text(stringResource(R.string.all)) },
                             leadingIcon = if (filter == ClientFilter.ALL) {
                                 { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
                             } else null
@@ -86,7 +88,7 @@ fun ClientListScreen(
                         FilterChip(
                             selected = filter == ClientFilter.WITH_LOCATION,
                             onClick = { viewModel.onFilterChange(ClientFilter.WITH_LOCATION) },
-                            label = { Text("With Location") },
+                            label = { Text(stringResource(R.string.with_location)) },
                             leadingIcon = if (filter == ClientFilter.WITH_LOCATION) {
                                 { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
                             } else null
@@ -96,7 +98,7 @@ fun ClientListScreen(
                         FilterChip(
                             selected = filter == ClientFilter.RECENT,
                             onClick = { viewModel.onFilterChange(ClientFilter.RECENT) },
-                            label = { Text("Recently Added") },
+                            label = { Text(stringResource(R.string.recently_added)) },
                             leadingIcon = if (filter == ClientFilter.RECENT) {
                                 { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
                             } else null
@@ -110,7 +112,7 @@ fun ClientListScreen(
             ExtendedFloatingActionButton(
                 onClick = onNavigateToAddClient,
                 icon = { Icon(Icons.Default.PersonAdd, contentDescription = null) },
-                text = { Text("New Client") }
+                text = { Text(stringResource(R.string.new_client)) }
             )
         }
     ) { innerPadding ->
@@ -161,7 +163,7 @@ fun ClientListScreen(
         AlertDialog(
             onDismissRequest = { clientToDelete = null },
             icon = { Icon(Icons.Default.Warning, contentDescription = null) },
-            title = { Text("Delete Client") },
+            title = { Text(stringResource(R.string.delete_client)) },
             text = {
                 Text("Are you sure you want to delete ${client.fullName}? This will also remove all their meeting records.")
             },
@@ -174,10 +176,10 @@ fun ClientListScreen(
                     colors = ButtonDefaults.textButtonColors(
                         contentColor = MaterialTheme.colorScheme.error
                     )
-                ) { Text("Delete") }
+                ) { Text(stringResource(R.string.delete)) }
             },
             dismissButton = {
-                TextButton(onClick = { clientToDelete = null }) { Text("Cancel") }
+                TextButton(onClick = { clientToDelete = null }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }
@@ -254,7 +256,7 @@ private fun ClientListItem(
                 }
                 DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                     DropdownMenuItem(
-                        text = { Text("Delete") },
+                        text = { Text(stringResource(R.string.delete)) },
                         onClick = { showMenu = false; onDelete() },
                         leadingIcon = {
                             Icon(Icons.Default.Delete, contentDescription = null,

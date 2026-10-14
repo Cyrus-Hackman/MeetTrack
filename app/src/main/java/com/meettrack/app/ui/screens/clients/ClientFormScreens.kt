@@ -10,10 +10,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.meettrack.app.R
 import com.google.accompanist.permissions.*
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
@@ -117,7 +119,7 @@ private fun ClientFormScreen(
                 OutlinedTextField(
                     value = formState.fullName,
                     onValueChange = viewModel::updateFullName,
-                    label = { Text("Full Name *") },
+                    label = { Text(stringResource(R.string.full_name_required)) },
                     leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
@@ -126,7 +128,7 @@ private fun ClientFormScreen(
                 OutlinedTextField(
                     value = formState.phoneNumber,
                     onValueChange = viewModel::updatePhoneNumber,
-                    label = { Text("Phone Number *") },
+                    label = { Text(stringResource(R.string.phone_number_required)) },
                     leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
@@ -140,7 +142,7 @@ private fun ClientFormScreen(
                 OutlinedTextField(
                     value = formState.email,
                     onValueChange = viewModel::updateEmail,
-                    label = { Text("Email Address") },
+                    label = { Text(stringResource(R.string.email_address)) },
                     leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
@@ -151,7 +153,7 @@ private fun ClientFormScreen(
                 OutlinedTextField(
                     value = formState.company,
                     onValueChange = viewModel::updateCompany,
-                    label = { Text("Company / Organization") },
+                    label = { Text(stringResource(R.string.company_organization)) },
                     leadingIcon = { Icon(Icons.Default.Business, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
@@ -159,7 +161,7 @@ private fun ClientFormScreen(
                 OutlinedTextField(
                     value = formState.address,
                     onValueChange = viewModel::updateAddress,
-                    label = { Text("Address / Location Description") },
+                    label = { Text(stringResource(R.string.address_location_description)) },
                     leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
                     maxLines = 3
@@ -184,7 +186,7 @@ private fun ClientFormScreen(
                 OutlinedTextField(
                     value = formState.notes,
                     onValueChange = viewModel::updateNotes,
-                    label = { Text("Notes about this client") },
+                    label = { Text(stringResource(R.string.client_notes)) },
                     leadingIcon = { Icon(Icons.Default.Notes, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth().height(120.dp)
                 )
@@ -261,7 +263,7 @@ private fun LocationSection(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     CircularProgressIndicator(modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Getting GPS location…", style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(R.string.getting_gps_location), style = MaterialTheme.typography.bodyMedium)
                 }
             }
             is LocationState.Error -> {

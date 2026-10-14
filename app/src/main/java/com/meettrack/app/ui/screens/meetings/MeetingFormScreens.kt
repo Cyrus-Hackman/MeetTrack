@@ -9,10 +9,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.meettrack.app.R
 import com.meettrack.app.data.model.Client
 import com.meettrack.app.data.model.MeetingStatus
 import java.time.LocalDate
@@ -125,7 +127,7 @@ private fun MeetingFormScreen(
             OutlinedTextField(
                 value = formState.title,
                 onValueChange = viewModel::updateTitle,
-                label = { Text("Meeting Title / Purpose *") },
+                label = { Text(stringResource(R.string.meeting_title_purpose)) },
                 leadingIcon = { Icon(Icons.Default.Title, contentDescription = null) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
@@ -140,7 +142,7 @@ private fun MeetingFormScreen(
                     value = formState.selectedClient?.fullName ?: "",
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Client *") },
+                    label = { Text(stringResource(R.string.client_required)) },
                     leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = showClientDropdown) },
                     modifier = Modifier.fillMaxWidth().menuAnchor()
@@ -151,7 +153,7 @@ private fun MeetingFormScreen(
                 ) {
                     if (allClients.isEmpty()) {
                         DropdownMenuItem(
-                            text = { Text("No clients — add one first") },
+                            text = { Text(stringResource(R.string.no_clients_add_one_first)) },
                             onClick = {}
                         )
                     } else {
@@ -182,7 +184,7 @@ private fun MeetingFormScreen(
                     value = formState.date.format(DateTimeFormatter.ofPattern("MMM d, yyyy")),
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Date") },
+                    label = { Text(stringResource(R.string.date)) },
                     leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null) },
                     modifier = Modifier.weight(1f),
                     trailingIcon = {
@@ -195,7 +197,7 @@ private fun MeetingFormScreen(
                     value = formState.time.format(DateTimeFormatter.ofPattern("h:mm a")),
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Time") },
+                    label = { Text(stringResource(R.string.time)) },
                     leadingIcon = { Icon(Icons.Default.Schedule, contentDescription = null) },
                     modifier = Modifier.weight(1f),
                     trailingIcon = {
@@ -210,7 +212,7 @@ private fun MeetingFormScreen(
             OutlinedTextField(
                 value = formState.location,
                 onValueChange = viewModel::updateLocation,
-                label = { Text("Meeting Location") },
+                label = { Text(stringResource(R.string.meeting_location)) },
                 leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
@@ -219,7 +221,7 @@ private fun MeetingFormScreen(
             // Status (for edit)
             if (submitLabel == "Save Changes") {
                 Column {
-                    Text("Status", style = MaterialTheme.typography.labelLarge,
+                    Text(stringResource(R.string.status), style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -262,7 +264,7 @@ private fun MeetingFormScreen(
             OutlinedTextField(
                 value = formState.notes,
                 onValueChange = viewModel::updateNotes,
-                label = { Text("Notes") },
+                label = { Text(stringResource(R.string.notes)) },
                 leadingIcon = { Icon(Icons.Default.Notes, contentDescription = null) },
                 modifier = Modifier.fillMaxWidth().height(100.dp)
             )
@@ -304,10 +306,10 @@ private fun MeetingFormScreen(
                         viewModel.updateDate(date)
                     }
                     showDatePicker = false
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+                TextButton(onClick = { showDatePicker = false }) { Text(stringResource(R.string.cancel)) }
             }
         ) {
             DatePicker(state = datePickerState)
@@ -323,7 +325,7 @@ private fun MeetingFormScreen(
         )
         AlertDialog(
             onDismissRequest = { showTimePicker = false },
-            title = { Text("Pick Time") },
+            title = { Text(stringResource(R.string.pick_time)) },
             text = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     TimePicker(state = timePickerState)
@@ -333,10 +335,10 @@ private fun MeetingFormScreen(
                 TextButton(onClick = {
                     viewModel.updateTime(LocalTime.of(timePickerState.hour, timePickerState.minute))
                     showTimePicker = false
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showTimePicker = false }) { Text("Cancel") }
+                TextButton(onClick = { showTimePicker = false }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }

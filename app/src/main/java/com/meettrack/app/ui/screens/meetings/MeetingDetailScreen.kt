@@ -13,10 +13,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.meettrack.app.R
 import com.meettrack.app.data.model.MeetingStatus
 import com.meettrack.app.ui.components.InfoCard
 import com.meettrack.app.ui.components.InfoRow
@@ -48,7 +50,7 @@ fun MeetingDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Meeting Details", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.meeting_details), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -67,18 +69,18 @@ fun MeetingDetailScreen(
                     DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                         if (meeting?.status == MeetingStatus.UPCOMING) {
                             DropdownMenuItem(
-                                text = { Text("Mark Complete") },
+                                text = { Text(stringResource(R.string.mark_complete)) },
                                 onClick = { showMenu = false; showCompleteDialog = true },
                                 leadingIcon = { Icon(Icons.Default.CheckCircle, contentDescription = null) }
                             )
                             DropdownMenuItem(
-                                text = { Text("Cancel Meeting") },
+                                text = { Text(stringResource(R.string.cancel_meeting)) },
                                 onClick = { showMenu = false; showCancelDialog = true },
                                 leadingIcon = { Icon(Icons.Default.Cancel, contentDescription = null) }
                             )
                         }
                         DropdownMenuItem(
-                            text = { Text("Delete", color = MaterialTheme.colorScheme.error) },
+                            text = { Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error) },
                             onClick = { showMenu = false; showDeleteDialog = true },
                             leadingIcon = {
                                 Icon(Icons.Default.Delete, contentDescription = null,
@@ -147,7 +149,7 @@ fun MeetingDetailScreen(
                     ) {
                         Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text("Reschedule")
+                        Text(stringResource(R.string.reschedule))
                     }
                     if (meeting.location.isNotBlank()) {
                         OutlinedButton(
@@ -160,7 +162,7 @@ fun MeetingDetailScreen(
                             Icon(Icons.Default.Navigation, contentDescription = null,
                                 modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(4.dp))
-                            Text("Navigate")
+                            Text(stringResource(R.string.navigate))
                         }
                     }
                 }
@@ -196,7 +198,7 @@ fun MeetingDetailScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Client", style = MaterialTheme.typography.labelSmall,
+                        Text(stringResource(R.string.client), style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary)
                         Text(client.fullName, style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold)
@@ -241,23 +243,23 @@ fun MeetingDetailScreen(
     if (showCompleteDialog) {
         AlertDialog(
             onDismissRequest = { showCompleteDialog = false },
-            title = { Text("Mark as Complete") },
-            text = { Text("Mark this meeting as completed?") },
+            title = { Text(stringResource(R.string.mark_as_complete)) },
+            text = { Text(stringResource(R.string.meeting_complete_confirmation)) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.completeMeeting(meetingId) { onNavigateBack() }
                     showCompleteDialog = false
-                }) { Text("Complete") }
+                }) { Text(stringResource(R.string.complete)) }
             },
-            dismissButton = { TextButton(onClick = { showCompleteDialog = false }) { Text("Cancel") } }
+            dismissButton = { TextButton(onClick = { showCompleteDialog = false }) { Text(stringResource(R.string.cancel)) } }
         )
     }
 
     if (showCancelDialog) {
         AlertDialog(
             onDismissRequest = { showCancelDialog = false },
-            title = { Text("Cancel Meeting") },
-            text = { Text("This will cancel the meeting and remove all reminders.") },
+            title = { Text(stringResource(R.string.cancel_meeting)) },
+            text = { Text(stringResource(R.string.cancel_meeting_confirmation)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -265,9 +267,9 @@ fun MeetingDetailScreen(
                         showCancelDialog = false
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
-                ) { Text("Cancel Meeting") }
+                ) { Text(stringResource(R.string.cancel_meeting)) }
             },
-            dismissButton = { TextButton(onClick = { showCancelDialog = false }) { Text("Back") } }
+            dismissButton = { TextButton(onClick = { showCancelDialog = false }) { Text(stringResource(R.string.back)) } }
         )
     }
 
@@ -275,8 +277,8 @@ fun MeetingDetailScreen(
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
             icon = { Icon(Icons.Default.Warning, contentDescription = null) },
-            title = { Text("Delete Meeting") },
-            text = { Text("Delete this meeting permanently? Reminders will also be removed.") },
+            title = { Text(stringResource(R.string.delete_meeting)) },
+            text = { Text(stringResource(R.string.delete_meeting_confirmation)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -284,9 +286,9 @@ fun MeetingDetailScreen(
                         showDeleteDialog = false
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
-                ) { Text("Delete") }
+                ) { Text(stringResource(R.string.delete)) }
             },
-            dismissButton = { TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") } }
+            dismissButton = { TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.cancel)) } }
         )
     }
 }
