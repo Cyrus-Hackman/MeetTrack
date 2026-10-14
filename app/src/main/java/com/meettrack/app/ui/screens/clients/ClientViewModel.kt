@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
@@ -67,9 +68,7 @@ class ClientViewModel @Inject constructor(
     fun loadClient(clientId: Long) {
         _clientId.value = clientId
         viewModelScope.launch {
-            clientRepository.getClientById(clientId).collect { client ->
-                client?.let { populateForm(it) }
-            }
+            clientRepository.getClientById(clientId).first()?.let(::populateForm)
         }
     }
 

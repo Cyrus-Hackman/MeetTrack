@@ -29,6 +29,8 @@ class MeetingRepository @Inject constructor(
 
     fun getMeetingWithClientById(id: Long): Flow<MeetingWithClient?> =
         meetingDao.getMeetingWithClientById(id)
+    suspend fun getMeetingWithClientByIdDirect(id: Long): MeetingWithClient? =
+        meetingDao.getMeetingWithClientByIdDirect(id)
     suspend fun getMeetingsWithClientsByIds(ids: List<Long>): List<MeetingWithClient> =
         meetingDao.getMeetingsWithClientsByIds(ids)
 

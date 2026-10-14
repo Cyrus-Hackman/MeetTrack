@@ -19,6 +19,9 @@ interface ClientDao {
     @Query("SELECT * FROM clients WHERE id = :id")
     fun getClientById(id: Long): Flow<Client?>
 
+    @Query("SELECT * FROM clients WHERE id = :id")
+    suspend fun getClientByIdDirect(id: Long): Client?
+
     @Query("""
         SELECT * FROM clients 
         WHERE fullName LIKE '%' || :query || '%'

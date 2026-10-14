@@ -71,34 +71,33 @@ class MeetingViewModel @Inject constructor(
 
     fun loadMeeting(meetingId: Long) {
         viewModelScope.launch {
-            meetingRepository.getMeetingWithClientById(meetingId).collect { meetingWithClient ->
-                _meetingDetail.value = meetingWithClient
-                meetingWithClient?.let { mwc ->
-                    val intervals = parseIntervals(mwc.meeting.reminderIntervals)
-                    _formState.value = MeetingFormState(
-                        title = mwc.meeting.title,
-                        selectedClient = mwc.client,
-                        date = mwc.meeting.dateTime.toLocalDate(),
-                        time = mwc.meeting.dateTime.toLocalTime(),
-                        location = mwc.meeting.location,
-                        notes = mwc.meeting.notes,
-                        reminderIntervals = intervals,
-                        status = mwc.meeting.status
-                    )
-                }
+            val meetingWithClient =
+                meetingRepository.getMeetingWithClientByIdDirect(meetingId)
+            _meetingDetail.value = meetingWithClient
+            meetingWithClient?.let { mwc ->
+                val intervals = parseIntervals(mwc.meeting.reminderIntervals)
+                _formState.value = MeetingFormState(
+                    title = mwc.meeting.title,
+                    selectedClient = mwc.client,
+                    date = mwc.meeting.dateTime.toLocalDate(),
+                    time = mwc.meeting.dateTime.toLocalTime(),
+                    location = mwc.meeting.location,
+                    notes = mwc.meeting.notes,
+                    reminderIntervals = intervals,
+                    status = mwc.meeting.status
+                )
             }
         }
     }
 
     fun preselectClient(clientId: Long) {
         viewModelScope.launch {
-            clientRepository.getClientById(clientId).collect { client ->
-                if (client != null) {
-                    _formState.value = _formState.value.copy(
-                        selectedClient = client,
-                        location = client.formattedAddress.ifBlank { client.address }
-                    )
-                }
+            val client = clientRepository.getClientByIdDirect(clientId)
+            if (client != null) {
+                _formState.value = _formState.value.copy(
+                    selectedClient = client,
+                    location = client.formattedAddress.ifBlank { client.address }
+                )
             }
         }
     }

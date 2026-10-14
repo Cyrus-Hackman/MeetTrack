@@ -20,6 +20,7 @@ class ClientRepository @Inject constructor(
     fun getRecentClients(limit: Int = 5): Flow<List<Client>> = clientDao.getRecentClients(limit)
     fun getClientCount(): Flow<Int> = clientDao.getClientCount()
     fun getClientById(id: Long): Flow<Client?> = clientDao.getClientById(id)
+    suspend fun getClientByIdDirect(id: Long): Client? = clientDao.getClientByIdDirect(id)
     fun getClientWithMeetings(clientId: Long): Flow<ClientWithMeetings?> =
         clientDao.getClientWithMeetings(clientId)
 
