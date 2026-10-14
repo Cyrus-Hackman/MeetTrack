@@ -7,10 +7,9 @@ import android.util.Log
 import com.meettrack.app.data.db.MeetTrackDatabase
 import com.meettrack.app.data.model.MeetingStatus
 import com.meettrack.app.data.preferences.SettingsRepository
+import com.meettrack.app.di.ApplicationScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
@@ -28,13 +27,17 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
     @Inject
     lateinit var database: MeetTrackDatabase
 
+    @Inject
+    @ApplicationScope
+    lateinit var applicationScope: CoroutineScope
+
     override fun onReceive(context: Context, intent: Intent) {
         val meetingId = intent.getLongExtra(NotificationScheduler.EXTRA_MEETING_ID, -1L)
         val minutesBefore = intent.getIntExtra(NotificationScheduler.EXTRA_MINUTES_BEFORE, 30)
 
         if (meetingId != -1L) {
             val pendingResult = goAsync()
-            CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            applicationScope.launch {
                 try {
                     if (settingsRepository.settings.first().notificationsEnabled) {
                         val meetingWithClient =
