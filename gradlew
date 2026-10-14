@@ -18,6 +18,7 @@
 
 APP_NAME="Gradle"
 APP_BASE_NAME=`basename "$0"`
+APP_HOME=$( cd -P "$(dirname "$0")" > /dev/null 2>&1 && pwd -P )
 
 # Use the maximum available, or set MAX_FD != -1 to use that value.
 MAX_FD="maximum"
