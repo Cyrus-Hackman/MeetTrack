@@ -14,8 +14,8 @@ class Converters {
         try {
             LocalDateTime.parse(it, formatter)
         } catch (e: DateTimeParseException) {
-            Log.e("Converters", "Invalid stored LocalDateTime; using current time", e)
-            LocalDateTime.now()
+            Log.e("Converters", "Invalid stored LocalDateTime; using minimum sentinel", e)
+            LocalDateTime.MIN
         }
     }
 
