@@ -6,6 +6,8 @@ import android.app.AlarmManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -26,7 +28,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.IOException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,8 +51,72 @@ fun SettingsScreen(
         mutableStateOf(hasExactAlarmPermission(context))
     }
 
-    var showRestoreDialog by remember { mutableStateOf(false) }
-    var restoreInputText by remember { mutableStateOf("") }
+    var restoreBackupJson by remember { mutableStateOf<String?>(null) }
+
+    val exportJsonLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        if (uri != null) {
+            viewModel.exportToJson(
+                onReady = { json ->
+                    saveDocument(context, scope, uri, json, snackbarHostState, "JSON backup saved.")
+                },
+                onError = { message ->
+                    scope.launch { snackbarHostState.showSnackbar(message) }
+                }
+            )
+        }
+    }
+    val exportClientsCsvLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/csv")
+    ) { uri ->
+        if (uri != null) {
+            viewModel.exportClientsCsv(
+                onReady = { csv ->
+                    saveDocument(context, scope, uri, csv, snackbarHostState, "Clients CSV saved.")
+                },
+                onError = { message ->
+                    scope.launch { snackbarHostState.showSnackbar(message) }
+                }
+            )
+        }
+    }
+    val exportMeetingsCsvLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/csv")
+    ) { uri ->
+        if (uri != null) {
+            viewModel.exportMeetingsCsv(
+                onReady = { csv ->
+                    saveDocument(context, scope, uri, csv, snackbarHostState, "Meetings CSV saved.")
+                },
+                onError = { message ->
+                    scope.launch { snackbarHostState.showSnackbar(message) }
+                }
+            )
+        }
+    }
+    val restoreDocumentLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            scope.launch {
+                try {
+                    restoreBackupJson = withContext(Dispatchers.IO) {
+                        val json = context.contentResolver.openInputStream(uri)
+                            ?.bufferedReader(Charsets.UTF_8)
+                            ?.use { it.readText() }
+                            ?: throw IOException("Unable to open the selected backup file")
+                        require(json.isNotBlank()) { "The selected backup file is empty" }
+                        json
+                    }
+                } catch (e: Exception) {
+                    snackbarHostState.showSnackbar(
+                        "Could not read backup: ${e.message ?: "Unknown error"}"
+                    )
+                }
+            }
+        }
+    }
 
     DisposableEffect(lifecycleOwner, context) {
         val observer = LifecycleEventObserver { _, event ->
@@ -167,48 +237,28 @@ fun SettingsScreen(
                     icon = Icons.Default.CloudDownload,
                     title = "Backup to JSON",
                     subtitle = "Export all clients and meetings to JSON file",
-                    onClick = {
-                        viewModel.exportToJson { json ->
-                            shareContent(context, json, "meettrack_backup.json", "application/json")
-                            scope.launch {
-                                snackbarHostState.showSnackbar("Backup generated! Choose where to save or share.")
-                            }
-                        }
-                    }
+                    onClick = { exportJsonLauncher.launch("meettrack_backup.json") }
                 )
                 ActionSettingsItem(
                     icon = Icons.Default.TableChart,
                     title = "Export Clients to CSV",
                     subtitle = "Spreadsheet of names, phones, addresses and GPS",
-                    onClick = {
-                        viewModel.exportClientsCsv { csv ->
-                            shareContent(context, csv, "clients.csv", "text/csv")
-                            scope.launch {
-                                snackbarHostState.showSnackbar("Clients CSV generated!")
-                            }
-                        }
-                    }
+                    onClick = { exportClientsCsvLauncher.launch("clients.csv") }
                 )
                 ActionSettingsItem(
                     icon = Icons.Default.EventNote,
                     title = "Export Meetings to CSV",
                     subtitle = "Spreadsheet of scheduled appointments and agendas",
-                    onClick = {
-                        viewModel.exportMeetingsCsv { csv ->
-                            shareContent(context, csv, "meetings.csv", "text/csv")
-                            scope.launch {
-                                snackbarHostState.showSnackbar("Meetings CSV generated!")
-                            }
-                        }
-                    }
+                    onClick = { exportMeetingsCsvLauncher.launch("meetings.csv") }
                 )
                 ActionSettingsItem(
                     icon = Icons.Default.Restore,
                     title = "Restore from JSON",
                     subtitle = "Restore clients and meetings from backup JSON",
                     onClick = {
-                        restoreInputText = ""
-                        showRestoreDialog = true
+                        restoreDocumentLauncher.launch(
+                            arrayOf("application/json", "text/json", "application/octet-stream")
+                        )
                     }
                 )
             }
@@ -235,47 +285,33 @@ fun SettingsScreen(
     }
 
     // Restore Backup Dialog
-    if (showRestoreDialog) {
+    restoreBackupJson?.let { backupJson ->
         AlertDialog(
-            onDismissRequest = { showRestoreDialog = false },
+            onDismissRequest = { restoreBackupJson = null },
             icon = { Icon(Icons.Default.Restore, contentDescription = null) },
             title = { Text("Restore Backup") },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        "Paste your MeetTrack JSON backup payload below to restore clients and meetings:",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                    OutlinedTextField(
-                        value = restoreInputText,
-                        onValueChange = { restoreInputText = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp),
-                        placeholder = { Text("Paste JSON here…") },
-                        maxLines = 10
-                    )
-                }
+                Text(
+                    "This will merge records from the backup: records with matching IDs will be overwritten, new records will be added, and local records not in the backup will remain. Continue?"
+                )
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        if (restoreInputText.isNotBlank()) {
-                            viewModel.importFromJson(restoreInputText) { success, message ->
-                                scope.launch {
-                                    snackbarHostState.showSnackbar(message)
-                                }
+                        viewModel.importFromJson(backupJson) { success, message ->
+                            if (success) restoreBackupJson = null
+                            scope.launch {
+                                snackbarHostState.showSnackbar(message)
                             }
                         }
-                        showRestoreDialog = false
                     },
-                    enabled = restoreInputText.isNotBlank() && !isProcessingBackup
+                    enabled = !isProcessingBackup
                 ) {
                     Text("Restore")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showRestoreDialog = false }) {
+                TextButton(onClick = { restoreBackupJson = null }) {
                     Text("Cancel")
                 }
             }
@@ -289,13 +325,28 @@ private fun hasExactAlarmPermission(context: Context): Boolean {
     return alarmManager.canScheduleExactAlarms()
 }
 
-private fun shareContent(context: Context, content: String, subject: String, mimeType: String) {
-    val intent = Intent(Intent.ACTION_SEND).apply {
-        type = "text/plain"
-        putExtra(Intent.EXTRA_SUBJECT, subject)
-        putExtra(Intent.EXTRA_TEXT, content)
+private fun saveDocument(
+    context: Context,
+    scope: CoroutineScope,
+    uri: Uri,
+    content: String,
+    snackbarHostState: SnackbarHostState,
+    successMessage: String
+) {
+    scope.launch {
+        try {
+            withContext(Dispatchers.IO) {
+                val output = context.contentResolver.openOutputStream(uri)
+                    ?: throw IOException("Unable to open the selected file for writing")
+                output.bufferedWriter(Charsets.UTF_8).use { it.write(content) }
+            }
+            snackbarHostState.showSnackbar(successMessage)
+        } catch (e: Exception) {
+            snackbarHostState.showSnackbar(
+                "Could not write file: ${e.message ?: "Unknown error"}"
+            )
+        }
     }
-    context.startActivity(Intent.createChooser(intent, "Share $subject"))
 }
 
 @Composable
