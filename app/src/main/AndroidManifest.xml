@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Internet -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -16,9 +15,6 @@
 
     <!-- Alarms / Scheduling -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-
-    <!-- Wake lock for WorkManager -->
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <!-- Vibration for notifications -->
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -51,18 +47,6 @@
                 <data android:scheme="meettrack" android:host="meeting" />
             </intent-filter>
         </activity>
-
-        <!-- Notification channels & WorkManager worker -->
-        <provider
-            android:name="androidx.startup.InitializationProvider"
-            android:authorities="${applicationId}.androidx-startup"
-            android:exported="false"
-            tools:node="merge">
-            <meta-data
-                android:name="androidx.work.WorkManagerInitializer"
-                android:value="androidx.startup"
-                tools:node="remove" />
-        </provider>
 
         <!-- Boot receiver to re-schedule reminders -->
         <receiver

@@ -74,11 +74,6 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
-    // WorkManager
-    implementation(libs.androidx.work.runtime.ktx)
-    implementation(libs.hilt.work)
-    ksp(libs.hilt.compiler)
-
     // Location & Maps
     implementation(libs.play.services.location)
     implementation(libs.play.services.maps)
