@@ -233,6 +233,12 @@ fun SettingsScreen(
 
             // Data & Backup
             SettingsSection(title = "Data & Backup") {
+                Text(
+                    "Backup files contain unencrypted personal data, including client contact details and locations. Store and share them carefully.",
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
                 ActionSettingsItem(
                     icon = Icons.Default.CloudDownload,
                     title = "Backup to JSON",
