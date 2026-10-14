@@ -263,7 +263,12 @@ fun SettingsScreen(
                     subtitle = "Restore clients and meetings from backup JSON",
                     onClick = {
                         restoreDocumentLauncher.launch(
-                            arrayOf("application/json", "text/json", "application/octet-stream")
+                            arrayOf(
+                                "application/json",
+                                "text/json",
+                                "text/plain",
+                                "application/octet-stream"
+                            )
                         )
                     }
                 )
