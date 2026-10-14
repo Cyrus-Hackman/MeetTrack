@@ -42,52 +42,56 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { settingsRepository.updateDefaultReminders(intervals) }
     }
 
-    fun exportToJson(onReady: (String) -> Unit) {
-        viewModelScope.launch {
-            _isProcessingBackup.value = true
-            try {
-                val json = backupManager.exportToJson()
-                onReady(json)
-            } finally {
-                _isProcessingBackup.value = false
-            }
-        }
-    }
+    fun exportToJson(onReady: (String) -> Unit, onError: (String) -> Unit) =
+        exportBackup(onReady, onError, backupManager::exportToJson)
 
-    fun exportClientsCsv(onReady: (String) -> Unit) {
-        viewModelScope.launch {
-            _isProcessingBackup.value = true
-            try {
-                val csv = backupManager.exportClientsToCsv()
-                onReady(csv)
-            } finally {
-                _isProcessingBackup.value = false
-            }
-        }
-    }
+    fun exportClientsCsv(onReady: (String) -> Unit, onError: (String) -> Unit) =
+        exportBackup(onReady, onError, backupManager::exportClientsToCsv)
 
-    fun exportMeetingsCsv(onReady: (String) -> Unit) {
-        viewModelScope.launch {
-            _isProcessingBackup.value = true
-            try {
-                val csv = backupManager.exportMeetingsToCsv()
-                onReady(csv)
-            } finally {
-                _isProcessingBackup.value = false
-            }
-        }
-    }
+    fun exportMeetingsCsv(onReady: (String) -> Unit, onError: (String) -> Unit) =
+        exportBackup(onReady, onError, backupManager::exportMeetingsToCsv)
 
     fun importFromJson(jsonString: String, onComplete: (Boolean, String) -> Unit) {
         viewModelScope.launch {
             _isProcessingBackup.value = true
             try {
-                val result = backupManager.importFromJson(jsonString)
-                result.onSuccess { summary ->
-                    onComplete(true, "Successfully restored ${summary.clientsCount} clients and ${summary.meetingsCount} meetings.")
-                }.onFailure { error ->
-                    onComplete(false, "Restore failed: ${error.message ?: "Invalid data"}")
+                val result = try {
+                    backupManager.importFromJson(jsonString)
+                } catch (e: Exception) {
+                    Result.failure(e)
                 }
+                result.fold(
+                    onSuccess = { summary ->
+                        onComplete(
+                            true,
+                            "Successfully restored ${summary.clientsCount} clients and ${summary.meetingsCount} meetings."
+                        )
+                    },
+                    onFailure = { error ->
+                        onComplete(false, "Restore failed: ${error.message ?: "Invalid data"}")
+                    }
+                )
+            } finally {
+                _isProcessingBackup.value = false
+            }
+        }
+    }
+
+    private fun exportBackup(
+        onReady: (String) -> Unit,
+        onError: (String) -> Unit,
+        export: suspend () -> String
+    ) {
+        viewModelScope.launch {
+            _isProcessingBackup.value = true
+            try {
+                val content = try {
+                    export()
+                } catch (e: Exception) {
+                    onError("Export failed: ${e.message ?: "Unable to generate backup"}")
+                    return@launch
+                }
+                onReady(content)
             } finally {
                 _isProcessingBackup.value = false
             }
