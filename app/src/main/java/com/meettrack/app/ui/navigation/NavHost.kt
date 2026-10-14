@@ -11,6 +11,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.meettrack.app.ui.screens.calendar.CalendarScreen
 import com.meettrack.app.ui.screens.clients.AddClientScreen
 import com.meettrack.app.ui.screens.clients.ClientDetailScreen
@@ -152,7 +153,10 @@ fun MeetTrackNavHost(
 
         composable(
             route = Screen.MeetingDetail.route,
-            arguments = listOf(navArgument("meetingId") { type = NavType.LongType })
+            arguments = listOf(navArgument("meetingId") { type = NavType.LongType }),
+            deepLinks = listOf(
+                navDeepLink { uriPattern = "meettrack://meeting/{meetingId}" }
+            )
         ) { backStack ->
             val meetingId = backStack.arguments?.getLong("meetingId") ?: return@composable
             MeetingDetailScreen(

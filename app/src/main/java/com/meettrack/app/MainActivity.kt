@@ -1,6 +1,7 @@
 package com.meettrack.app
 
 import android.Manifest
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -23,6 +24,7 @@ import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import com.meettrack.app.notifications.NotificationScheduler
 import com.meettrack.app.ui.navigation.MeetTrackNavHost
 import com.meettrack.app.ui.navigation.Screen
 import com.meettrack.app.ui.screens.settings.SettingsViewModel
@@ -45,10 +47,14 @@ val bottomNavItems = listOf(
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private var navigateToMeetingId by mutableStateOf<Long?>(null)
+    private var notificationIntentVersion by mutableStateOf(0L)
+
     @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        navigateToMeetingId = intent.meetingIdFromNotification()
 
         setContent {
             val settingsViewModel: SettingsViewModel = hiltViewModel()
@@ -71,23 +77,39 @@ class MainActivity : ComponentActivity() {
                 }
 
                 MeetTrackApp(
-                    navigateToMeetingId = intent?.getLongExtra("meeting_id", -1L)
-                        ?.takeIf { it != -1L }
+                    navigateToMeetingId = navigateToMeetingId,
+                    notificationIntentVersion = notificationIntentVersion
                 )
             }
         }
     }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        intent.meetingIdFromNotification()?.let { meetingId ->
+            navigateToMeetingId = meetingId
+            notificationIntentVersion++
+        }
+    }
 }
+
+private fun Intent.meetingIdFromNotification() =
+    getLongExtra(NotificationScheduler.EXTRA_MEETING_ID, -1L)
+        .takeIf { it != -1L }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MeetTrackApp(navigateToMeetingId: Long? = null) {
+fun MeetTrackApp(
+    navigateToMeetingId: Long? = null,
+    notificationIntentVersion: Long = 0
+) {
     val navController = rememberNavController()
 
     // Deep link handling from notification tap
-    LaunchedEffect(navigateToMeetingId) {
-        navigateToMeetingId?.let { id ->
-            navController.navigate(Screen.MeetingDetail.createRoute(id))
+    LaunchedEffect(navigateToMeetingId, notificationIntentVersion) {
+        navigateToMeetingId?.let { meetingId ->
+            navController.navigate(Screen.MeetingDetail.createRoute(meetingId))
         }
     }
 
