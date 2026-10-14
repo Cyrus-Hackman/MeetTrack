@@ -13,11 +13,10 @@ import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.meettrack.app.MainActivity
 import com.meettrack.app.R
 import com.meettrack.app.data.preferences.SettingsRepository
+import com.meettrack.app.data.model.parseReminderIntervals
 import com.meettrack.app.data.model.MeetingWithClient
 import kotlinx.coroutines.flow.first
 import java.time.ZoneId
@@ -41,8 +40,6 @@ class NotificationScheduler @Inject constructor(
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     private val notificationManager =
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    private val gson = Gson()
-
     init {
         createNotificationChannel()
     }
@@ -77,7 +74,7 @@ class NotificationScheduler @Inject constructor(
             return
         }
 
-        val intervals = parseIntervals(meeting.reminderIntervals)
+        val intervals = parseReminderIntervals(meeting.reminderIntervals)
         val meetingEpoch = meeting.dateTime
             .atZone(ZoneId.systemDefault())
             .toInstant()
@@ -244,15 +241,6 @@ class NotificationScheduler @Inject constructor(
 
         val notifId = Objects.hash(meetingId, minutesBefore, "notification")
         notificationManager.notify(notifId, notificationBuilder.build())
-    }
-
-    private fun parseIntervals(json: String): List<Int> {
-        return try {
-            val type = object : TypeToken<List<Int>>() {}.type
-            gson.fromJson(json, type) ?: emptyList()
-        } catch (e: Exception) {
-            emptyList()
-        }
     }
 
     private fun getRequestCode(meetingId: Long, minutesBefore: Int): Int =

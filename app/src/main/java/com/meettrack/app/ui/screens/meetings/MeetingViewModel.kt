@@ -3,11 +3,11 @@ package com.meettrack.app.ui.screens.meetings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.meettrack.app.data.model.Client
 import com.meettrack.app.data.model.Meeting
 import com.meettrack.app.data.model.MeetingStatus
 import com.meettrack.app.data.model.MeetingWithClient
+import com.meettrack.app.data.model.parseReminderIntervals
 import com.meettrack.app.data.preferences.SettingsRepository
 import com.meettrack.app.data.repository.ClientRepository
 import com.meettrack.app.data.repository.MeetingRepository
@@ -75,7 +75,7 @@ class MeetingViewModel @Inject constructor(
                 meetingRepository.getMeetingWithClientByIdDirect(meetingId)
             _meetingDetail.value = meetingWithClient
             meetingWithClient?.let { mwc ->
-                val intervals = parseIntervals(mwc.meeting.reminderIntervals)
+                val intervals = parseReminderIntervals(mwc.meeting.reminderIntervals)
                 _formState.value = MeetingFormState(
                     title = mwc.meeting.title,
                     selectedClient = mwc.client,
@@ -228,10 +228,4 @@ class MeetingViewModel @Inject constructor(
 
     fun clearError() { _formState.value = _formState.value.copy(error = null) }
 
-    private fun parseIntervals(json: String): List<Int> {
-        return try {
-            val type = object : TypeToken<List<Int>>() {}.type
-            gson.fromJson(json, type) ?: emptyList()
-        } catch (e: Exception) { emptyList() }
-    }
 }
