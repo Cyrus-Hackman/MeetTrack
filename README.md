@@ -20,6 +20,9 @@ A modern Android app for managing clients, scheduling meetings, capturing GPS lo
 > [!TIP]
 > MeetTrack is built for field professionals who need fast client access, meeting tracking, and exact location-aware reminders—without relying on the internet for daily tasks.
 
+> [!NOTE]
+> Maps and reverse geocoding require a network connection. Client and meeting records are stored locally on the device.
+
 ## Overview
 
 MeetTrack is a native Android application built with Jetpack Compose and Material 3 for managing clients, scheduling meetings, capturing home or office locations, and staying on top of daily appointments through smart reminders.
@@ -68,11 +71,11 @@ It helps users keep contact details organized, know where to meet someone, and n
 | Layer | Technology |
 |---|---|
 | UI | Jetpack Compose + Material 3 |
-| Architecture | MVVM + Clean Architecture |
+| Architecture | MVVM |
 | Dependency Injection | Dagger Hilt |
 | Database | Room SQLite with Flow & Coroutines |
 | Preferences | AndroidX DataStore |
-| Scheduling | AlarmManager + BroadcastReceiver + WorkManager |
+| Scheduling | AlarmManager + BroadcastReceiver |
 | Location & Maps | Google Play Services Location + Maps Compose |
 | Serialization | Gson |
 | Build System | Gradle Kotlin DSL |
@@ -152,7 +155,7 @@ To enable in-app maps, add your Google Maps API key to the ignored `local.proper
 MAPS_API_KEY=your_google_maps_api_key
 ```
 
-The project builds without a key, but map tiles will not load until one is configured.
+The project builds without a key, but map tiles will not load until one is configured. Maps and reverse geocoding also require a network connection.
 
 ---
 
