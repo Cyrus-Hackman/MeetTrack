@@ -18,12 +18,9 @@ import com.google.gson.reflect.TypeToken
 import com.meettrack.app.MainActivity
 import com.meettrack.app.R
 import com.meettrack.app.data.preferences.SettingsRepository
-import com.meettrack.app.data.model.Meeting
 import com.meettrack.app.data.model.MeetingWithClient
 import kotlinx.coroutines.flow.first
-import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -36,11 +33,6 @@ class NotificationScheduler @Inject constructor(
         const val CHANNEL_ID = "meettrack_reminders"
         const val CHANNEL_NAME = "Meeting Reminders"
         const val EXTRA_MEETING_ID = "meeting_id"
-        const val EXTRA_CLIENT_NAME = "client_name"
-        const val EXTRA_CLIENT_PHONE = "client_phone"
-        const val EXTRA_MEETING_TITLE = "meeting_title"
-        const val EXTRA_MEETING_DATETIME = "meeting_datetime"
-        const val EXTRA_MEETING_LOCATION = "meeting_location"
         const val EXTRA_MINUTES_BEFORE = "minutes_before"
         private const val TAG = "NotificationScheduler"
     }
@@ -100,12 +92,7 @@ class NotificationScheduler @Inject constructor(
                 scheduleAlarm(
                     meetingId = meeting.id,
                     minutesBefore = minutesBefore,
-                    triggerAtMillis = triggerTime,
-                    clientName = client.fullName,
-                    clientPhone = client.phoneNumber,
-                    meetingTitle = meeting.title,
-                    meetingDateTime = meeting.dateTime,
-                    meetingLocation = effectiveLocation
+                    triggerAtMillis = triggerTime
                 )
             }
         }
@@ -114,21 +101,11 @@ class NotificationScheduler @Inject constructor(
     private fun scheduleAlarm(
         meetingId: Long,
         minutesBefore: Int,
-        triggerAtMillis: Long,
-        clientName: String,
-        clientPhone: String,
-        meetingTitle: String,
-        meetingDateTime: LocalDateTime,
-        meetingLocation: String
+        triggerAtMillis: Long
     ) {
         val requestCode = getRequestCode(meetingId, minutesBefore)
         val intent = Intent(context, ReminderAlarmReceiver::class.java).apply {
             putExtra(EXTRA_MEETING_ID, meetingId)
-            putExtra(EXTRA_CLIENT_NAME, clientName)
-            putExtra(EXTRA_CLIENT_PHONE, clientPhone)
-            putExtra(EXTRA_MEETING_TITLE, meetingTitle)
-            putExtra(EXTRA_MEETING_DATETIME, meetingDateTime.format(DateTimeFormatter.ofPattern("MMM d, yyyy 'at' h:mm a")))
-            putExtra(EXTRA_MEETING_LOCATION, meetingLocation)
             putExtra(EXTRA_MINUTES_BEFORE, minutesBefore)
         }
         val pendingIntent = PendingIntent.getBroadcast(

@@ -78,6 +78,10 @@ interface MeetingDao {
     fun getMeetingWithClientById(id: Long): Flow<MeetingWithClient?>
 
     @Transaction
+    @Query("SELECT * FROM meetings WHERE id = :id")
+    suspend fun getMeetingWithClientByIdDirect(id: Long): MeetingWithClient?
+
+    @Transaction
     @Query("SELECT * FROM meetings WHERE id IN (:ids)")
     suspend fun getMeetingsWithClientsByIds(ids: List<Long>): List<MeetingWithClient>
 

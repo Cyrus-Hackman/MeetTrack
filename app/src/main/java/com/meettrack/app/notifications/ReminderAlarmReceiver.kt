@@ -4,6 +4,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import com.meettrack.app.data.db.MeetTrackDatabase
+import com.meettrack.app.data.model.MeetingStatus
 import com.meettrack.app.data.preferences.SettingsRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -11,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -22,13 +25,11 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
     @Inject
     lateinit var settingsRepository: SettingsRepository
 
+    @Inject
+    lateinit var database: MeetTrackDatabase
+
     override fun onReceive(context: Context, intent: Intent) {
         val meetingId = intent.getLongExtra(NotificationScheduler.EXTRA_MEETING_ID, -1L)
-        val clientName = intent.getStringExtra(NotificationScheduler.EXTRA_CLIENT_NAME) ?: ""
-        val clientPhone = intent.getStringExtra(NotificationScheduler.EXTRA_CLIENT_PHONE) ?: ""
-        val meetingTitle = intent.getStringExtra(NotificationScheduler.EXTRA_MEETING_TITLE) ?: ""
-        val meetingDateTime = intent.getStringExtra(NotificationScheduler.EXTRA_MEETING_DATETIME) ?: ""
-        val meetingLocation = intent.getStringExtra(NotificationScheduler.EXTRA_MEETING_LOCATION) ?: ""
         val minutesBefore = intent.getIntExtra(NotificationScheduler.EXTRA_MINUTES_BEFORE, 30)
 
         if (meetingId != -1L) {
@@ -36,13 +37,29 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
             CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
                 try {
                     if (settingsRepository.settings.first().notificationsEnabled) {
+                        val meetingWithClient =
+                            database.meetingDao().getMeetingWithClientByIdDirect(meetingId)
+                                ?: return@launch
+                        if (meetingWithClient.meeting.status in setOf(
+                                MeetingStatus.CANCELLED,
+                                MeetingStatus.COMPLETED
+                            )
+                        ) return@launch
+
+                        val meeting = meetingWithClient.meeting
+                        val client = meetingWithClient.client
+                        val location = meeting.location.ifBlank {
+                            client.formattedAddress.ifBlank { client.address }
+                        }
                         notificationScheduler.showImmediateNotification(
                             meetingId = meetingId,
-                            clientName = clientName,
-                            clientPhone = clientPhone,
-                            meetingTitle = meetingTitle,
-                            meetingDateTime = meetingDateTime,
-                            meetingLocation = meetingLocation,
+                            clientName = client.fullName,
+                            clientPhone = client.phoneNumber,
+                            meetingTitle = meeting.title,
+                            meetingDateTime = meeting.dateTime.format(
+                                DateTimeFormatter.ofPattern("MMM d, yyyy 'at' h:mm a")
+                            ),
+                            meetingLocation = location,
                             minutesBefore = minutesBefore
                         )
                     }
