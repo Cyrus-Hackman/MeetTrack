@@ -65,7 +65,7 @@ class NotificationScheduler @Inject constructor(
         val meeting = meetingWithClient.meeting
 
         // Cancel existing reminders first
-        cancelReminders(meeting.id)
+        cancelReminders(meeting.id, parseReminderIntervals(meeting.reminderIntervals))
 
         if (!settingsRepository.settings.first().notificationsEnabled ||
             meeting.status.name == "CANCELLED"
@@ -132,9 +132,8 @@ class NotificationScheduler @Inject constructor(
         }
     }
 
-    fun cancelReminders(meetingId: Long) {
-        val allPossibleIntervals = listOf(1, 5, 10, 15, 30, 60, 120, 1440)
-        allPossibleIntervals.forEach { minutesBefore ->
+    fun cancelReminders(meetingId: Long, intervals: List<Int>) {
+        intervals.distinct().forEach { minutesBefore ->
             val requestCode = getRequestCode(meetingId, minutesBefore)
             val intent = Intent(context, ReminderAlarmReceiver::class.java)
             val pendingIntent = PendingIntent.getBroadcast(

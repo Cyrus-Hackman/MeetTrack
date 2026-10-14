@@ -3,6 +3,7 @@ package com.meettrack.app.data.repository
 import com.meettrack.app.data.db.ClientDao
 import com.meettrack.app.data.model.Client
 import com.meettrack.app.data.model.ClientWithMeetings
+import com.meettrack.app.data.model.parseReminderIntervals
 import com.meettrack.app.notifications.NotificationScheduler
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -27,8 +28,12 @@ class ClientRepository @Inject constructor(
     suspend fun addClient(client: Client): Long = clientDao.insertClient(client)
     suspend fun updateClient(client: Client) = clientDao.updateClient(client)
     suspend fun deleteClientAndCancelReminders(id: Long) {
-        meetingRepository.getMeetingIdsForClient(id)
-            .forEach(notificationScheduler::cancelReminders)
+        meetingRepository.getMeetingsForClientDirect(id).forEach { meeting ->
+            notificationScheduler.cancelReminders(
+                meeting.id,
+                parseReminderIntervals(meeting.reminderIntervals)
+            )
+        }
         clientDao.deleteClientById(id)
     }
     suspend fun getAllClientsDirect(): List<Client> = clientDao.getAllClientsDirect()

@@ -176,6 +176,12 @@ class MeetingViewModel @Inject constructor(
         viewModelScope.launch {
             _formState.value = state.copy(isLoading = true, error = null)
             try {
+                meetingRepository.getMeetingById(meetingId)?.let { previousMeeting ->
+                    notificationScheduler.cancelReminders(
+                        meetingId,
+                        parseReminderIntervals(previousMeeting.reminderIntervals)
+                    )
+                }
                 val meeting = Meeting(
                     id = meetingId,
                     clientId = state.selectedClient.id,
@@ -204,25 +210,34 @@ class MeetingViewModel @Inject constructor(
 
     fun cancelMeeting(meetingId: Long, onSuccess: () -> Unit) {
         viewModelScope.launch {
+            cancelMeetingReminders(meetingId)
             meetingRepository.updateMeetingStatus(meetingId, MeetingStatus.CANCELLED)
-            notificationScheduler.cancelReminders(meetingId)
             onSuccess()
         }
     }
 
     fun completeMeeting(meetingId: Long, onSuccess: () -> Unit) {
         viewModelScope.launch {
+            cancelMeetingReminders(meetingId)
             meetingRepository.updateMeetingStatus(meetingId, MeetingStatus.COMPLETED)
-            notificationScheduler.cancelReminders(meetingId)
             onSuccess()
         }
     }
 
     fun deleteMeeting(meetingId: Long, onSuccess: () -> Unit) {
         viewModelScope.launch {
-            notificationScheduler.cancelReminders(meetingId)
+            cancelMeetingReminders(meetingId)
             meetingRepository.deleteMeetingById(meetingId)
             onSuccess()
+        }
+    }
+
+    private suspend fun cancelMeetingReminders(meetingId: Long) {
+        meetingRepository.getMeetingById(meetingId)?.let { meeting ->
+            notificationScheduler.cancelReminders(
+                meetingId,
+                parseReminderIntervals(meeting.reminderIntervals)
+            )
         }
     }
 
