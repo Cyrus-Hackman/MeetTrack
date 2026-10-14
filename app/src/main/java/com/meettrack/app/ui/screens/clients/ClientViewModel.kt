@@ -7,7 +7,7 @@ import com.meettrack.app.data.model.Client
 import com.meettrack.app.data.model.ClientWithMeetings
 import com.meettrack.app.data.repository.ClientRepository
 import com.meettrack.app.location.LocationService
-import com.meettrack.app.location.LocationResult2
+import com.meettrack.app.location.DeviceLocation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +25,7 @@ import javax.inject.Inject
 sealed class LocationState {
     object Idle : LocationState()
     object Loading : LocationState()
-    data class Success(val result: LocationResult2) : LocationState()
+    data class Success(val result: DeviceLocation) : LocationState()
     data class Error(val message: String) : LocationState()
 }
 
