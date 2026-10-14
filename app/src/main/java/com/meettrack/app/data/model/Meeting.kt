@@ -6,6 +6,8 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import java.time.LocalDateTime
 
+val CORRUPT_DATE_SENTINEL: LocalDateTime = LocalDateTime.MIN
+
 enum class MeetingStatus { UPCOMING, COMPLETED, CANCELLED, RESCHEDULED }
 
 @Entity(

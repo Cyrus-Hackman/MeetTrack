@@ -23,6 +23,7 @@ import com.meettrack.app.data.model.MeetingStatus
 import com.meettrack.app.ui.components.InfoCard
 import com.meettrack.app.ui.components.InfoRow
 import com.meettrack.app.ui.components.MeetingStatusChip
+import com.meettrack.app.util.formatMeetingDateTime
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -129,7 +130,9 @@ fun MeetingDetailScreen(
                             tint = MaterialTheme.colorScheme.primary)
                         Spacer(Modifier.width(4.dp))
                         Text(
-                            meeting.dateTime.format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy 'at' h:mm a")),
+                            meeting.dateTime.formatMeetingDateTime(
+                                DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy 'at' h:mm a")
+                            ),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -175,7 +178,9 @@ fun MeetingDetailScreen(
                 InfoRow(
                     icon = Icons.Default.CalendarToday,
                     label = "Date & Time",
-                    value = meeting.dateTime.format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy 'at' h:mm a"))
+                    value = meeting.dateTime.formatMeetingDateTime(
+                        DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy 'at' h:mm a")
+                    )
                 )
                 if (meeting.location.isNotBlank()) {
                     InfoRow(icon = Icons.Default.LocationOn, label = "Location", value = meeting.location)

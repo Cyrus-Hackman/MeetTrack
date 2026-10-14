@@ -3,6 +3,7 @@ package com.meettrack.app.ui.screens.meetings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
+import com.meettrack.app.data.model.CORRUPT_DATE_SENTINEL
 import com.meettrack.app.data.model.Client
 import com.meettrack.app.data.model.Meeting
 import com.meettrack.app.data.model.MeetingStatus
@@ -79,8 +80,16 @@ class MeetingViewModel @Inject constructor(
                 _formState.value = MeetingFormState(
                     title = mwc.meeting.title,
                     selectedClient = mwc.client,
-                    date = mwc.meeting.dateTime.toLocalDate(),
-                    time = mwc.meeting.dateTime.toLocalTime(),
+                    date = if (mwc.meeting.dateTime == CORRUPT_DATE_SENTINEL) {
+                        LocalDate.now()
+                    } else {
+                        mwc.meeting.dateTime.toLocalDate()
+                    },
+                    time = if (mwc.meeting.dateTime == CORRUPT_DATE_SENTINEL) {
+                        LocalTime.of(9, 0)
+                    } else {
+                        mwc.meeting.dateTime.toLocalTime()
+                    },
                     location = mwc.meeting.location,
                     notes = mwc.meeting.notes,
                     reminderIntervals = intervals,

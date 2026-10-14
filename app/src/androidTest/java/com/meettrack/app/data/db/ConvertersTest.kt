@@ -1,6 +1,7 @@
 package com.meettrack.app.data.db
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.meettrack.app.data.model.CORRUPT_DATE_SENTINEL
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -11,6 +12,6 @@ class ConvertersTest {
 
     @Test
     fun malformedStoredDateUsesMinimumSentinel() {
-        assertEquals(LocalDateTime.MIN, Converters().fromLocalDateTime("corrupt-date"))
+        assertEquals(CORRUPT_DATE_SENTINEL, Converters().fromLocalDateTime("corrupt-date"))
     }
 }

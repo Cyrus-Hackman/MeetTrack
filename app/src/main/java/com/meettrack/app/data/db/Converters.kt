@@ -2,6 +2,7 @@ package com.meettrack.app.data.db
 
 import android.util.Log
 import androidx.room.TypeConverter
+import com.meettrack.app.data.model.CORRUPT_DATE_SENTINEL
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
@@ -15,7 +16,7 @@ class Converters {
             LocalDateTime.parse(it, formatter)
         } catch (e: DateTimeParseException) {
             Log.e("Converters", "Invalid stored LocalDateTime; using minimum sentinel", e)
-            LocalDateTime.MIN
+            CORRUPT_DATE_SENTINEL
         }
     }
 

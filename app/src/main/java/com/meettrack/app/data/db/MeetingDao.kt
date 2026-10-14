@@ -15,11 +15,18 @@ import kotlinx.coroutines.flow.Flow
 interface MeetingDao {
 
     @Transaction
-    @Query("SELECT * FROM meetings ORDER BY dateTime ASC")
+    @Query("""
+        SELECT * FROM meetings
+        ORDER BY CASE WHEN datetime(dateTime) IS NULL THEN 0 ELSE 1 END, dateTime ASC
+    """)
     fun getAllMeetingsWithClient(): Flow<List<MeetingWithClient>>
 
     @Transaction
-    @Query("SELECT * FROM meetings WHERE clientId = :clientId ORDER BY dateTime DESC")
+    @Query("""
+        SELECT * FROM meetings
+        WHERE clientId = :clientId
+        ORDER BY CASE WHEN datetime(dateTime) IS NULL THEN 1 ELSE 0 END, dateTime DESC
+    """)
     fun getMeetingsForClient(clientId: Long): Flow<List<MeetingWithClient>>
 
     @Query("SELECT * FROM meetings WHERE clientId = :clientId")
@@ -37,6 +44,7 @@ interface MeetingDao {
     @Query("""
         SELECT * FROM meetings 
         WHERE status IN ('UPCOMING', 'RESCHEDULED')
+        AND datetime(dateTime) IS NOT NULL
         AND dateTime > strftime('%Y-%m-%dT%H:%M:%S', 'now', 'localtime')
         ORDER BY dateTime ASC
     """)
@@ -46,8 +54,11 @@ interface MeetingDao {
     @Query("""
         SELECT * FROM meetings 
         WHERE status IN ('UPCOMING', 'RESCHEDULED')
-        AND dateTime < strftime('%Y-%m-%dT%H:%M:%S', 'now', 'localtime')
-        ORDER BY dateTime DESC
+        AND (
+            dateTime < strftime('%Y-%m-%dT%H:%M:%S', 'now', 'localtime')
+            OR datetime(dateTime) IS NULL
+        )
+        ORDER BY CASE WHEN datetime(dateTime) IS NULL THEN 0 ELSE 1 END, dateTime DESC
     """)
     fun getOverdueMeetings(): Flow<List<MeetingWithClient>>
 
@@ -55,6 +66,7 @@ interface MeetingDao {
     @Query("""
         SELECT * FROM meetings
         WHERE status IN ('UPCOMING', 'RESCHEDULED')
+        AND datetime(dateTime) IS NOT NULL
         AND dateTime BETWEEN strftime('%Y-%m-%dT%H:%M:%S', 'now', 'localtime')
         AND strftime('%Y-%m-%dT%H:%M:%S', 'now', 'localtime', '+7 days')
         ORDER BY dateTime ASC
@@ -85,11 +97,18 @@ interface MeetingDao {
     @Query("SELECT * FROM meetings WHERE id IN (:ids)")
     suspend fun getMeetingsWithClientsByIds(ids: List<Long>): List<MeetingWithClient>
 
-    @Query("SELECT COUNT(*) FROM meetings WHERE status IN ('UPCOMING', 'RESCHEDULED')")
+    @Query("""
+        SELECT COUNT(*) FROM meetings
+        WHERE status IN ('UPCOMING', 'RESCHEDULED')
+        AND datetime(dateTime) IS NOT NULL
+    """)
     fun getUpcomingMeetingCount(): Flow<Int>
 
     @Transaction
-    @Query("SELECT * FROM meetings ORDER BY dateTime ASC")
+    @Query("""
+        SELECT * FROM meetings
+        ORDER BY CASE WHEN datetime(dateTime) IS NULL THEN 0 ELSE 1 END, dateTime ASC
+    """)
     suspend fun getAllMeetingsWithClientsDirect(): List<MeetingWithClient>
 
     @Upsert
@@ -107,7 +126,10 @@ interface MeetingDao {
     @Query("UPDATE meetings SET status = :status WHERE id = :id")
     suspend fun updateMeetingStatus(id: Long, status: MeetingStatus)
 
-    @Query("SELECT * FROM meetings ORDER BY dateTime ASC")
+    @Query("""
+        SELECT * FROM meetings
+        ORDER BY CASE WHEN datetime(dateTime) IS NULL THEN 0 ELSE 1 END, dateTime ASC
+    """)
     suspend fun getAllMeetingsDirect(): List<Meeting>
 
     @Upsert

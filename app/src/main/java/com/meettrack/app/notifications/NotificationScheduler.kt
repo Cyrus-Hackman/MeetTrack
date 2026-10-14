@@ -19,10 +19,10 @@ import com.meettrack.app.data.preferences.SettingsRepository
 import com.meettrack.app.data.model.parseReminderIntervals
 import com.meettrack.app.data.model.MeetingWithClient
 import com.meettrack.app.data.model.MeetingStatus
+import com.meettrack.app.util.toEpochMillisOrNull
 import kotlinx.coroutines.flow.first
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.util.Objects
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -67,6 +67,15 @@ class NotificationScheduler @Inject constructor(
         // Cancel existing reminders first
         cancelReminders(meeting.id, parseReminderIntervals(meeting.reminderIntervals))
 
+        val meetingEpoch = meeting.dateTime.toEpochMillisOrNull()
+        if (meetingEpoch == null) {
+            Log.w(
+                TAG,
+                "Meeting ${meeting.id} has an invalid or out-of-range date; reminders were not scheduled"
+            )
+            return
+        }
+
         if (!settingsRepository.settings.first().notificationsEnabled ||
             meeting.status.name == "CANCELLED"
         ) return
@@ -78,11 +87,6 @@ class NotificationScheduler @Inject constructor(
         }
 
         val intervals = parseReminderIntervals(meeting.reminderIntervals)
-        val meetingEpoch = meeting.dateTime
-            .atZone(ZoneId.systemDefault())
-            .toInstant()
-            .toEpochMilli()
-
         intervals.forEach { minutesBefore ->
             val triggerTime = meetingEpoch - (minutesBefore * 60 * 1000L)
             if (triggerTime > System.currentTimeMillis()) {

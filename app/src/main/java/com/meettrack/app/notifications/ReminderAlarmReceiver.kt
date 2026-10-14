@@ -8,6 +8,7 @@ import com.meettrack.app.data.db.MeetTrackDatabase
 import com.meettrack.app.data.model.MeetingStatus
 import com.meettrack.app.data.preferences.SettingsRepository
 import com.meettrack.app.di.ApplicationScope
+import com.meettrack.app.util.formatMeetingDateTime
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
@@ -59,7 +60,7 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
                             clientName = client.fullName,
                             clientPhone = client.phoneNumber,
                             meetingTitle = meeting.title,
-                            meetingDateTime = meeting.dateTime.format(
+                            meetingDateTime = meeting.dateTime.formatMeetingDateTime(
                                 DateTimeFormatter.ofPattern("MMM d, yyyy 'at' h:mm a")
                             ),
                             meetingLocation = location,

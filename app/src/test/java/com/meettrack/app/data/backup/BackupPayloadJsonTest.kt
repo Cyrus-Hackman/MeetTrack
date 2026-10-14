@@ -2,6 +2,7 @@ package com.meettrack.app.data.backup
 
 import com.google.gson.JsonParseException
 import com.meettrack.app.data.model.Client
+import com.meettrack.app.data.model.CORRUPT_DATE_SENTINEL
 import com.meettrack.app.data.model.Meeting
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
@@ -27,6 +28,22 @@ class BackupPayloadJsonTest {
             exportedAt = "2026-10-14T08:00:00",
             clients = listOf(client),
             meetings = listOf(meeting)
+        )
+
+        assertEquals(payload, BackupPayloadJson.decode(BackupPayloadJson.encode(payload)))
+    }
+
+    @Test
+    fun corruptDateSentinelRoundTripsInBackup() {
+        val payload = BackupPayload(
+            clients = emptyList(),
+            meetings = listOf(
+                Meeting(
+                    clientId = 1,
+                    title = "Corrupt date",
+                    dateTime = CORRUPT_DATE_SENTINEL
+                )
+            )
         )
 
         assertEquals(payload, BackupPayloadJson.decode(BackupPayloadJson.encode(payload)))

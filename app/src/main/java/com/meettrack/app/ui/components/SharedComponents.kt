@@ -19,9 +19,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.meettrack.app.data.model.Meeting
+import com.meettrack.app.data.model.CORRUPT_DATE_SENTINEL
 import com.meettrack.app.data.model.MeetingStatus
 import com.meettrack.app.data.model.MeetingWithClient
 import com.meettrack.app.ui.theme.*
+import com.meettrack.app.util.formatMeetingDateTime
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -58,8 +60,10 @@ fun MeetingCard(
     val meeting = meetingWithClient.meeting
     val client = meetingWithClient.client
     val isOverdue = meeting.status == MeetingStatus.UPCOMING &&
+            meeting.dateTime != CORRUPT_DATE_SENTINEL &&
             meeting.dateTime.isBefore(LocalDateTime.now())
     val isSoon = meeting.status == MeetingStatus.UPCOMING &&
+            meeting.dateTime != CORRUPT_DATE_SENTINEL &&
             meeting.dateTime.isAfter(LocalDateTime.now()) &&
             meeting.dateTime.isBefore(LocalDateTime.now().plusHours(2))
 
@@ -84,22 +88,32 @@ fun MeetingCard(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.width(48.dp)
             ) {
-                Text(
-                    text = meeting.dateTime.format(DateTimeFormatter.ofPattern("MMM")),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = meeting.dateTime.format(DateTimeFormatter.ofPattern("d")),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = meeting.dateTime.format(DateTimeFormatter.ofPattern("h:mm a")),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                if (meeting.dateTime == CORRUPT_DATE_SENTINEL) {
+                    Text(
+                        text = meeting.dateTime.formatMeetingDateTime(
+                            DateTimeFormatter.ofPattern("MMM")
+                        ),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                } else {
+                    Text(
+                        text = meeting.dateTime.format(DateTimeFormatter.ofPattern("MMM")),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = meeting.dateTime.format(DateTimeFormatter.ofPattern("d")),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = meeting.dateTime.format(DateTimeFormatter.ofPattern("h:mm a")),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
             Spacer(Modifier.width(12.dp))
@@ -393,4 +407,3 @@ fun InfoRow(
         }
     }
 }
-
