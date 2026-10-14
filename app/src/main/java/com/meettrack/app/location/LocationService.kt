@@ -5,6 +5,7 @@ import android.content.Context
 import android.location.Geocoder
 import android.os.Looper
 import android.util.Log
+import dagger.hilt.android.qualifiers.ApplicationContext
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -29,6 +30,7 @@ data class LocationResult2(
 
 @Singleton
 class LocationService @Inject constructor(
+    @ApplicationContext
     private val context: Context
 ) {
     private val fusedLocationClient: FusedLocationProviderClient =

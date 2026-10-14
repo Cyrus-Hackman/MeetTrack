@@ -19,6 +19,7 @@ import com.meettrack.app.data.preferences.SettingsRepository
 import com.meettrack.app.data.model.parseReminderIntervals
 import com.meettrack.app.data.model.MeetingWithClient
 import kotlinx.coroutines.flow.first
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.ZoneId
 import java.util.Objects
 import javax.inject.Inject
@@ -26,6 +27,7 @@ import javax.inject.Singleton
 
 @Singleton
 class NotificationScheduler @Inject constructor(
+    @ApplicationContext
     private val context: Context,
     private val settingsRepository: SettingsRepository
 ) {
