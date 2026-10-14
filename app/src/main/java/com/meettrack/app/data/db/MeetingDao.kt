@@ -36,7 +36,7 @@ interface MeetingDao {
     @Transaction
     @Query("""
         SELECT * FROM meetings 
-        WHERE status = 'UPCOMING'
+        WHERE status IN ('UPCOMING', 'RESCHEDULED')
         AND dateTime > strftime('%Y-%m-%dT%H:%M:%S', 'now', 'localtime')
         ORDER BY dateTime ASC
     """)
@@ -45,7 +45,7 @@ interface MeetingDao {
     @Transaction
     @Query("""
         SELECT * FROM meetings 
-        WHERE status = 'UPCOMING'
+        WHERE status IN ('UPCOMING', 'RESCHEDULED')
         AND dateTime < strftime('%Y-%m-%dT%H:%M:%S', 'now', 'localtime')
         ORDER BY dateTime DESC
     """)
@@ -54,7 +54,7 @@ interface MeetingDao {
     @Transaction
     @Query("""
         SELECT * FROM meetings
-        WHERE status = 'UPCOMING'
+        WHERE status IN ('UPCOMING', 'RESCHEDULED')
         AND dateTime BETWEEN strftime('%Y-%m-%dT%H:%M:%S', 'now', 'localtime')
         AND strftime('%Y-%m-%dT%H:%M:%S', 'now', 'localtime', '+7 days')
         ORDER BY dateTime ASC
@@ -85,13 +85,13 @@ interface MeetingDao {
     @Query("SELECT * FROM meetings WHERE id IN (:ids)")
     suspend fun getMeetingsWithClientsByIds(ids: List<Long>): List<MeetingWithClient>
 
-    @Query("SELECT COUNT(*) FROM meetings WHERE status = 'UPCOMING'")
+    @Query("SELECT COUNT(*) FROM meetings WHERE status IN ('UPCOMING', 'RESCHEDULED')")
     fun getUpcomingMeetingCount(): Flow<Int>
 
     @Transaction
     @Query("""
         SELECT * FROM meetings 
-        WHERE status = 'UPCOMING'
+        WHERE status IN ('UPCOMING', 'RESCHEDULED')
         AND dateTime > strftime('%Y-%m-%dT%H:%M:%S', 'now', 'localtime')
         ORDER BY dateTime ASC
     """)
